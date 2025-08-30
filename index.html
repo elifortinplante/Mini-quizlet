@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mini-Quizlet Mobile</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{margin:0;padding:0;font-family:sans-serif;background:linear-gradient(135deg,#6366f1,#ec4899,#f59e0b);color:white;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
+.input{width:100%;padding:8px;margin-top:5px;border-radius:15px;border:2px solid #ddd;color:black;background:white;}
+.btn{padding:10px 20px;border-radius:25px;font-weight:600;margin:5px;}
+.btn-primary{background:linear-gradient(90deg,#6366f1,#ec4899);color:white;}
+.btn-secondary{background:white;color:#6366f1;border:2px solid #6366f1;}
+.set-card{background:white;color:black;border-radius:20px;padding:10px;margin:5px;width:280px;display:flex;justify-content:space-between;align-items:center;flex-direction:column;box-shadow:0 4px 10px rgba(0,0,0,0.2);}
+.card-container{perspective:1000px;margin:20px 0;display:flex;justify-content:center;width:100%;}
+.card{width:300px;height:200px;background:white;color:black;border-radius:30px;display:flex;align-items:center;justify-content:center;font-size:20px;text-align:center;user-select:none;touch-action:none;transition:transform 0.6s;transform-style:preserve-3d;position:relative;}
+.card.flipped{transform:rotateY(180deg);}
+.card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;}
+.card-back{transform:rotateY(180deg);}
+.chip{background:#dbeafe;color:#1e3a8a;padding:5px 10px;border-radius:50px;font-size:14px;}
+.reward{color:yellow;font-size:18px;margin-top:10px;text-align:center;}
+.set-title-display{font-size:24px;font-weight:bold;text-align:center;margin-bottom:10px;}
+</style>
+</head>
+<body>
+<h1>Mini-Quizlet Mobile</h1>
+
+<div id="viewHome"></div>
+
+<div id="viewEditor" style="display:none;">
+  <label>Titre du set</label>
+  <input id="setTitle" class="input" placeholder="Ex: Vocabulaire anglais"/>
+  <label>Matière</label>
+  <input id="setSubject" class="input" placeholder="Ex: Anglais"/>
+  <div id="cardsList"></div>
+  <button id="btnAddCard" class="btn btn-primary">+ Ajouter carte</button>
+  <button id="btnSaveSet" class="btn btn-primary">💾 Sauvegarder</button>
+  <button id="btnBackHome" class="btn btn-secondary">← Retour</button>
+</div>
+
+<div id="viewStudy" style="display:none;">
+  <div class="set-title-display" id="studySetTitle"></div>
+  <div id="studyProgress" class="chip">0 / 0</div>
+  <div class="card-container">
+    <div id="card" class="card">
+      <div class="card-face card-front"></div>
+      <div class="card-face card-back"></div>
+    </div>
+  </div>
+  <div id="rewardMsg" class="reward"></div>
+  <button id="btnRestartAll" class="btn btn-primary">Tout recommencer</button>
+  <button id="btnRestartWrong" class="btn btn-secondary">Reprendre les mauvaises</button>
+  <button id="btnHome" class="btn btn-secondary">🏠 Home</button>
+</div>
+
+<script>
+let sets=JSON.parse(localStorage.getItem('mini_quizlet_sets')||'[]');
+let currentSet=null;
+let study={order:[],i:0,wrong:[],score:0,finished:false};
+
+const viewHome=document.getElementById('viewHome');
+const viewEditor=document.getElementById('viewEditor');
+const viewStudy=document.getElementById('viewStudy');
+
+function saveSets(){localStorage.setItem('mini_quizlet_sets',JSON.stringify(sets));}
+
+function renderHome(){
+  viewHome.innerHTML='';
+  sets.forEach((s,idx)=>{
+    const div=document.createElement('div');
+    div.className='set-card';
+    div.innerHTML=`
+      <div><strong>${s.title}</strong><br>${s.subject}<br>${s.cards.length} cartes</div>
+      <div>
+        <button class='btn btn-primary' onclick='editSet(${idx})'>Modifier</button>
+        <button class='btn btn-primary' onclick='startStudySet(${idx})'>Jouer</button>
+        <button class='btn btn-secondary' onclick='deleteSet(${idx})'>Supprimer</button>
+      </div>`;
+    viewHome.appendChild(div);
+  });
+  const newBtn=document.createElement('button');
+  newBtn.className='btn btn-primary';
+  newBtn.textContent='+ Nouveau set';
+  newBtn.onclick=()=>{
+    currentSet={id:Date.now(),title:'Nouveau set',subject:'',cards:[]};
+    sets.push(currentSet);
+    saveSets();
+    editSet(sets.length-1);
+  };
+  viewHome.appendChild(newBtn);
+}
+
+function editSet(idx){
+  currentSet=sets[idx];
+  viewHome.style.display='none';
+  viewEditor.style.display='block';
+  document.getElementById('setTitle').value=currentSet.title;
+  document.getElementById('setSubject').value=currentSet.subject;
+  renderCards();
+}
+
+function renderCards(){
+  const list=document.getElementById('cardsList');
+  list.innerHTML='';
+  currentSet.cards.forEach((c,i)=>{
+    const div=document.createElement('div');
+    const f=document.createElement('input');
+    f.className='input'; f.value=c.front;
+    f.addEventListener('focus',()=>{if(f.value==='Question') f.value='';});
+    f.addEventListener('input',()=>{c.front=f.value; saveSets();});
+    const b=document.createElement('input');
+    b.className='input'; b.value=c.back;
+    b.addEventListener('focus',()=>{if(b.value==='Réponse') b.value='';});
+    b.addEventListener('input',()=>{c.back=b.value; saveSets();});
+    div.appendChild(f); div.appendChild(b);
+    list.appendChild(div);
+  });
+}
+
+function deleteSet(idx){sets.splice(idx,1);saveSets();renderHome();}
+function startStudySet(idx){currentSet=sets[idx]; startStudy();}
+function startStudy(restartWrong=false){
+  study.order=restartWrong?study.wrong.slice():currentSet.cards.map((c,i)=>i);
+  study.i=0; study.wrong=[]; study.score=0; study.finished=false;
+  viewHome.style.display='none'; viewEditor.style.display='none'; viewStudy.style.display='block';
+  document.getElementById('studySetTitle').textContent=currentSet.title;
+  updateStudyCard();
+}
+
+function currentCard(){return currentSet.cards[study.order[study.i]];}
+function updateStudyCard(){
+  const c=currentCard();
+  const cardEl=document.getElementById('card');
+  if(!c){
+    study.finished=true;
+    document.getElementById('rewardMsg').textContent=`Score final: ${study.score}/${study.order.length}`;
+    cardEl.style.pointerEvents='none';
+    return;
+  }
+  document.getElementById('studyProgress').textContent=`${study.i+1}/${study.order.length}`;
+  cardEl.querySelector('.card-front').textContent=c.front;
+  cardEl.querySelector('.card-back').textContent=c.back;
+  cardEl.classList.remove('flipped');
+  cardEl.style.pointerEvents='auto';
+}
+
+function markCard(correct){
+  if(study.finished) return;
+  if(!correct) study.wrong.push(study.order[study.i]); else study.score++;
+  study.i++;
+  updateStudyCard();
+}
+
+document.getElementById('btnAddCard').onclick=()=>{
+  currentSet.cards.push({front:'Question',back:'Réponse'}); renderCards(); saveSets();
+};
+document.getElementById('btnSaveSet').onclick=()=>{
+  currentSet.title=document.getElementById('setTitle').value;
+  currentSet.subject=document.getElementById('setSubject').value;
+  saveSets(); renderHome(); viewEditor.style.display='none'; viewHome.style.display='block';
+};
+document.getElementById('btnBackHome').onclick=()=>{renderHome(); viewEditor.style.display='none'; viewHome.style.display='block';};
+document.getElementById('btnRestartAll').onclick=()=>{startStudy(false);};
+document.getElementById('btnRestartWrong').onclick=()=>{if(study.wrong.length===0){alert('Pas de mauvaises réponses.'); return;} startStudy(true);};
+document.getElementById('btnHome').onclick=()=>{viewStudy.style.display='none'; renderHome(); viewHome.style.display='block';};
+
+const cardEl=document.getElementById('card');
+let startX=0;
+cardEl.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;});
+cardEl.addEventListener('touchmove',e=>{const dx=e.touches[0].clientX-startX; cardEl.style.transform=`translateX(${dx}px)`;});
+cardEl.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-startX;
+  if(dx>100) markCard(true);
+  else if(dx<-100) markCard(false);
+  cardEl.style.transform='';
+});
+cardEl.addEventListener('click',()=>{cardEl.classList.toggle('flipped');});
+
+renderHome();
+</script>
+</body>
+</html>
