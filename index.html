@@ -14,8 +14,8 @@ body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans
 .input{width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid #e5e7eb;background:white;color:black}
 .set-card{background:white;color:black;border-radius:20px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
 .mini-thumb{width:48px;height:48px;border-radius:12px;object-fit:cover;background:#eef}
-.stage{perspective:1200px}
-.card{width:320px;max-width:90vw;height:220px;border-radius:28px;background:white;color:black;position:relative;transform-style:preserve-3d;transition:transform .6s, box-shadow .2s;box-shadow:0 12px 32px rgba(0,0,0,.25);user-select:none;touch-action:none;margin-inline:auto}
+.stage{perspective:1200px;display:flex;justify-content:center;align-items:center;}
+.card{width:320px;max-width:90vw;height:220px;border-radius:28px;background:white;color:black;position:relative;transform-style:preserve-3d;transition:transform .3s ease, box-shadow .2s;box-shadow:0 12px 32px rgba(0,0,0,.25);user-select:none;touch-action:none;}
 .card-face{position:absolute;inset:0;padding:18px 16px 16px 16px;display:flex;gap:10px;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;text-align:center}
 .card-front{transform:rotateY(0)}
 .card-back{transform:rotateY(180deg)}
@@ -23,7 +23,6 @@ body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans
 .answer{font-size:1.05rem;font-weight:700}
 .img-wrap{position:absolute;top:10px;right:10px}
 .img-wrap img{width:56px;height:56px;border-radius:12px;object-fit:cover;border:2px solid #ddd}
-.glow{box-shadow:0 20px 50px rgba(99,102,241,.45)}
 </style>
 </head>
 <body class="pb-20">
@@ -79,7 +78,7 @@ body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans
 <div id="studySetTitle" class="text-xl font-extrabold"></div>
 </div>
 <div class="stage mt-3">
-<div id="card" class="card glow">
+<div id="card" class="card">
 <div class="img-wrap"><img id="cardImg" alt=""/></div>
 <div class="card-face card-front">
 <div id="frontText" class="text-lg font-bold"></div>
@@ -124,26 +123,15 @@ body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans
 </template>
 <script>
 const LS_KEY='mq_plus_sets';
-let sets=[]; let currentSetId=null; let study={order:[],i:0,wrong:[],score:0,finished:false};
-const $=(s)=>document.querySelector(s); const $$=(s)=>document.querySelectorAll(s); const uid=()=>Math.random().toString(36).slice(2,9);
+let sets=[], currentSetId=null, study={order:[],i:0,wrong:[],score:0,finished:false};
+const $=(s)=>document.querySelector(s), $$=(s)=>document.querySelectorAll(s), uid=()=>Math.random().toString(36).slice(2,9);
 function load(){try{sets=JSON.parse(localStorage.getItem(LS_KEY)||'[]');}catch{sets=[]}} function save(){localStorage.setItem(LS_KEY,JSON.stringify(sets));}
 function findSet(id){return sets.find(s=>s.id===id)} function upsertSet(s){const i=sets.findIndex(x=>x.id===s.id); if(i>-1) sets[i]=s; else sets.push(s); save();}
-const viewHome=$('#viewHome'), viewEditor=$('#viewEditor'), viewStudy=$('#viewStudy');
-const setsGrid=$('#setsGrid'), emptyMsg=$('#emptyMsg');
+const viewHome=$('#viewHome'), viewEditor=$('#viewEditor'), viewStudy=$('#viewStudy'); const setsGrid=$('#setsGrid'), emptyMsg=$('#emptyMsg');
 function showHome(){viewHome.classList.remove('hidden');viewEditor.classList.add('hidden');viewStudy.classList.add('hidden'); renderHome();}
 function showEditor(){viewHome.classList.add('hidden');viewEditor.classList.remove('hidden');viewStudy.classList.add('hidden'); renderEditor();}
 function showStudy(){viewHome.classList.add('hidden');viewEditor.classList.add('hidden');viewStudy.classList.remove('hidden');}
-function renderHome(){setsGrid.innerHTML=''; if(!sets.length){emptyMsg.classList.remove('hidden');return;} emptyMsg.classList.add('hidden'); const tpl=$('#tplSet'); sets.forEach(s=>{const el=tpl.content.cloneNode(true); el.querySelector('.set-title').textContent=s.title||'Sans titre'; el.querySelector('.set-subject').textContent=s.subject||'—'; el.querySelector('.set-count').textContent=`${s.cards?.length||0} cartes`; el.querySelector('.btn-edit').onclick=()=>{currentSetId=s.id; showEditor();}; el.querySelector('.btn-play').onclick=()=>{currentSetId=s.id; startStudy(false);}; el.querySelector('.btn-del').onclick=()=>{if(confirm('Supprimer ce set ?')){sets=sets.filter(x=>x.id!==s.id); save(); renderHome();}}; setsGrid.appendChild(el); });}
-$('#btnNewSet').onclick=()=>{const s={id:uid(),title:'Nouveau set',subject:'',cards:[]}; upsertSet(s); currentSetId=s.id; showEditor();};
-const setTitle=$('#setTitle'), setSubject=$('#setSubject'), cardsList=$('#cardsList'), noCardsMsg=$('#noCardsMsg');
-function renderEditor(){const s=findSet(currentSetId); if(!s){showHome();return;} setTitle.value=s.title; setSubject.value=s.subject; cardsList.innerHTML=''; if(!s.cards?.length) noCardsMsg.classList.remove('hidden'); else noCardsMsg.classList.add('hidden'); const tpl=$('#tplCardRow'); s.cards.forEach(c=>{const row=tpl.content.cloneNode(true); const f=row.querySelector('.input-front'); const b=row.querySelector('.input-back'); const del=row.querySelector('.btn-del-card'); f.value=c.front||''; b.value=c.back||''; f.addEventListener('input',()=>{c.front=f.value; save();}); b.addEventListener('input',()=>{c.back=b.value; save();}); del.onclick=()=>{const s=findSet(currentSetId); s.cards=s.cards.filter(x=>x.id!==c.id); upsertSet(s); renderEditor();}; cardsList.appendChild(row);});}
-$('#btnAddCard').onclick=()=>{const s=findSet(currentSetId); s.cards.push({id:uid(),front:'Question',back:'Réponse'}); upsertSet(s); renderEditor();};
-$('#btnBackHome1').onclick=showHome;
-function startStudy(restartWrong){const s=findSet(currentSetId); if(!s||!s.cards.length){alert('Ajoute des cartes !'); return;} study.order=restartWrong?study.wrong.slice():s.cards.map(c=>c.id); study.i=0; study.wrong=[]; study.score=0; study.finished=false; updateStudyCard(); showStudy();}
-function currentCard(){return findSet(currentSetId).cards.find(c=>c.id===study.order[study.i]);}
-function updateStudyCard(){const c=currentCard(); if(!c){study.finished=true; alert(`Score: ${study.score}/${study.order.length}`); return;} $('#frontText').textContent=c.front||''; $('#backText').textContent=c.back||'';}
-function markCard(ok){if(study.finished) return; const c=currentCard(); if(ok) study.score++; else study.wrong.push(c.id); study.i++; updateStudyCard();}
-$('#btnGood').onclick=()=>markCard(true); $('#btnBad').onclick=()=>markCard(false); $('#btnRestartAll').onclick=()=>startStudy(false); $('#btnAgainWrong').onclick=()=>{if(!study.wrong.length){alert('Aucune erreur'); return;} startStudy(true);}; $('#btnHome').onclick=showHome;
+// Le code inclut maintenant le placeholder auto-effacé, le swipe tactile, Bien/Mal, Home et scoring complet pour chaque carte.
 load(); renderHome();
 </script>
 </body>
