@@ -3,185 +3,240 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Quizlet Final</title>
+<title>Mini Quizlet ++</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-  body {margin:0; font-family:system-ui,sans-serif; background:linear-gradient(135deg,#6366f1,#ec4899,#f59e0b); color:white; display:flex; flex-direction:column; align-items:center; min-height:100vh;}
-  h1,h2,h3 {margin:0;}
-  button {padding:0.5rem 1rem; border-radius:0.5rem; border:none; font-weight:bold; cursor:pointer;}
-  .btn-primary {background:#4f46e5; color:white;}
-  .btn-secondary {background:white; color:#4f46e5;}
-  input {padding:0.5rem; border-radius:0.5rem; border:none; width:100%; margin-bottom:0.5rem;}
-  #setsList, #cardsList {width:90%; max-width:400px; margin-top:1rem;}
-  .set-card, .card {background:white; color:black; border-radius:1rem; margin-bottom:1rem; padding:1rem; box-shadow:0 5px 15px rgba(0,0,0,0.2); position:relative; user-select:none;}
-  .card {width:300px; height:400px; display:flex; flex-direction:column; justify-content:center; align-items:center; perspective:1000px; margin:2rem auto;}
-  .card-inner {width:100%; height:100%; text-align:center; border-radius:1rem; transition:transform 0.6s; transform-style:preserve-3d; position:relative;}
-  .card.flipped .card-inner {transform:rotateY(180deg);}
-  .card-front, .card-back {position:absolute; width:100%; height:100%; backface-visibility:hidden; display:flex; flex-direction:column; justify-content:center; align-items:center; border-radius:1rem; font-size:1.2rem; padding:1rem; box-sizing:border-box; overflow:hidden;}
-  .card-back {transform:rotateY(180deg);}
-  .card img {position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; border-radius:1rem; opacity:0.5;}
-  .card-text {position:relative; z-index:1;}
-  .swipe-area {position:absolute; inset:0; z-index:2;}
+body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#6366f1,#ec4899,#f59e0b);color:white;min-height:100vh;}
+.btn{padding:.7rem 1rem;border-radius:9999px;font-weight:700;cursor:pointer;}
+.btn-primary{background:linear-gradient(90deg,#6366f1,#ec4899);color:white;}
+.btn-secondary{background:white;color:#4f46e5;border:2px solid #4f46e5;}
+.input{width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid #e5e7eb;background:white;color:black;}
+.set-card{background:white;color:black;border-radius:20px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);}
+.stage{perspective:1200px;}
+.card{width:320px;max-width:90vw;height:220px;border-radius:28px;background:white;color:black;position:relative;transform-style:preserve-3d;transition:transform .6s,box-shadow .2s;box-shadow:0 12px 32px rgba(0,0,0,.25);user-select:none;margin-inline:auto;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;}
+.card-face{position:absolute;inset:0;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;font-weight:700;font-size:1.1rem;color:white;text-shadow:0 0 5px black;}
+.card-front{transform:rotateY(0);}
+.card-back{transform:rotateY(180deg);}
+.flipped{transform:rotateY(180deg);}
+.card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:28px;z-index:-1;}
 </style>
 </head>
-<body>
-
-<h1>Mini Quizlet Final</h1>
-
-<div id="home">
-  <button id="btnNewSet" class="btn-primary">+ Nouveau set</button>
-  <div id="setsList"></div>
+<body class="pb-20">
+<header class="max-w-4xl mx-auto px-4 pt-5 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-2xl bg-white text-indigo-600 grid place-items-center font-extrabold">MQ+</div>
+<div>
+<h1 class="text-2xl font-extrabold drop-shadow">Mini-Quizlet ++</h1>
+<p class="text-indigo-100 text-sm -mt-1">Étudier en s’amusant ✨</p>
 </div>
-
-<div id="editor" style="display:none; width:90%; max-width:400px;">
-  <h2>Éditeur de set</h2>
-  <input id="setTitle" placeholder="Titre du set">
-  <input id="setSubject" placeholder="Matière">
-  <button id="btnAddCard" class="btn-primary">+ Ajouter une carte</button>
-  <div id="cardsList"></div>
-  <button id="btnStartStudy" class="btn-primary">▶ Étudier</button>
-  <button id="btnBackHome" class="btn-secondary">← Accueil</button>
 </div>
-
-<div id="study" style="display:none;">
-  <h2 id="studyTitle"></h2>
-  <h3 id="studySubject"></h3>
-  <div class="card" id="studyCard">
-    <div class="card-inner">
-      <div class="card-front"><img id="frontImg"><div class="card-text" id="frontText"></div></div>
-      <div class="card-back"><img id="backImg"><div class="card-text" id="backText"></div></div>
-    </div>
-    <div class="swipe-area"></div>
-  </div>
-  <div style="text-align:center;">
-    <button id="btnRestartAll" class="btn-primary">Tout recommencer</button>
-    <button id="btnAgainWrong" class="btn-secondary">Reprendre erreurs</button>
-  </div>
+<div class="flex items-center gap-2">
+<button id="btnNewSet" class="btn btn-primary">+ Nouveau set</button>
 </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-4 pt-4">
+<!-- HOME -->
+<section id="viewHome" class="space-y-4">
+<div id="setsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+<p id="emptyMsg" class="text-center text-white/90 hidden">Aucun set. Crée ton premier ✨</p>
+</section>
+
+<!-- EDITOR -->
+<section id="viewEditor" class="hidden">
+<div class="flex items-center justify-between mb-3">
+<button class="btn btn-secondary" id="btnBackHome1">← Accueil</button>
+<button class="btn btn-primary" id="btnStudyFromEditor">▶ Étudier</button>
+</div>
+<div class="grid sm:grid-cols-2 gap-3 mb-3">
+<div>
+<label class="text-sm font-bold">Titre du set</label>
+<input id="setTitle" class="input" placeholder="Ex: Vocabulaire anglais">
+</div>
+<div>
+<label class="text-sm font-bold">Matière</label>
+<input id="setSubject" class="input" placeholder="Ex: Anglais">
+</div>
+</div>
+<div class="flex items-center justify-between mb-2">
+<h3 class="font-extrabold">Cartes</h3>
+<button id="btnAddCard" class="btn btn-primary">+ Ajouter</button>
+</div>
+<div id="cardsList" class="space-y-3"></div>
+<p id="noCardsMsg" class="hidden">Aucune carte.</p>
+</section>
+
+<!-- STUDY -->
+<section id="viewStudy" class="hidden text-center">
+<div class="flex items-center justify-between mb-2">
+<button class="btn btn-secondary" id="btnBackHome2">← Accueil</button>
+<div>
+<h2 id="studySetTitle" class="text-xl font-extrabold"></h2>
+<p id="studySetSubject" class="text-sm"></p>
+</div>
+</div>
+<div class="stage mt-3">
+<div id="card" class="card">
+<div class="card-front"></div>
+<div class="card-back"></div>
+</div>
+</div>
+<div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+<button id="btnAgainWrong" class="btn btn-secondary">Reprendre erreurs</button>
+<button id="btnRestartAll" class="btn btn-primary">Tout recommencer</button>
+</div>
+<p id="progressText" class="mt-3"></p>
+</section>
+</main>
+
+<!-- Templates -->
+<template id="tplSet">
+<div class="set-card p-4 flex items-center gap-3">
+<div class="flex-1">
+<div class="font-extrabold text-black/90 set-title">Titre</div>
+<div class="text-sm text-slate-500 set-subject">Matière</div>
+<div class="text-xs text-slate-500 set-count">0 cartes</div>
+</div>
+<div class="flex flex-col gap-2">
+<button class="btn btn-primary btn-edit">Modifier</button>
+<button class="btn btn-primary btn-play">Jouer</button>
+<button class="btn btn-secondary btn-del">Supprimer</button>
+</div>
+</div>
+</template>
+
+<template id="tplCardRow">
+<div class="set-card p-3">
+<input class="input input-front mb-2" placeholder="Question">
+<input class="input input-back mb-2" placeholder="Réponse">
+<input class="input input-img mb-2" placeholder="URL Image (optionnel)">
+<button class="btn btn-secondary btn-del-card w-full">Supprimer la carte</button>
+</div>
+</template>
 
 <script>
-// --- stockage ---
-const LS_KEY='miniQuizletSets';
-let sets=JSON.parse(localStorage.getItem(LS_KEY)||'[]');
-let currentSet=null;
-let study={order:[],index:0,wrong:[],score:0};
+// --- Data & helpers ---
+const LS_KEY='mq_plus_sets';
+let sets=[]; 
+let currentSetId=null;
+let study={order:[],i:0,wrong:[],finished:false,score:0};
 
-// --- éléments ---
-const home=document.getElementById('home');
-const editor=document.getElementById('editor');
-const studyDiv=document.getElementById('study');
-const setsList=document.getElementById('setsList');
-const cardsList=document.getElementById('cardsList');
-const setTitle=document.getElementById('setTitle');
-const setSubject=document.getElementById('setSubject');
-const studyCard=document.getElementById('studyCard');
-const frontText=document.getElementById('frontText');
-const backText=document.getElementById('backText');
-const frontImg=document.getElementById('frontImg');
-const backImg=document.getElementById('backImg');
-const studyTitle=document.getElementById('studyTitle');
-const studySubject=document.getElementById('studySubject');
+const $=(s)=>document.querySelector(s);
+const $$=(s)=>document.querySelectorAll(s);
+const uid=()=>Math.random().toString(36).slice(2,9);
 
-// --- fonctions ---
+function load(){try{sets=JSON.parse(localStorage.getItem(LS_KEY)||'[]');}catch{sets=[]}}
 function save(){localStorage.setItem(LS_KEY,JSON.stringify(sets));}
-function showHome(){home.style.display='block'; editor.style.display='none'; studyDiv.style.display='none'; renderSets();}
-function showEditor(){home.style.display='none'; editor.style.display='block'; studyDiv.style.display='none'; renderEditor();}
-function showStudy(){home.style.display='none'; editor.style.display='none'; studyDiv.style.display='block';}
+function findSet(id){return sets.find(s=>s.id===id)}
+function upsertSet(s){const i=sets.findIndex(x=>x.id===s.id); if(i>-1) sets[i]=s; else sets.push(s); save();}
 
-function renderSets(){
-  setsList.innerHTML='';
-  sets.forEach((s,i)=>{
-    const div=document.createElement('div');
-    div.className='set-card';
-    div.innerHTML=`<strong>${s.title}</strong><br>${s.subject}<br>
-      <button data-index="${i}" class="btn-primary btnEdit">Modifier</button>
-      <button data-index="${i}" class="btn-primary btnPlay">Jouer</button>
-      <button data-index="${i}" class="btn-secondary btnDel">Supprimer</button>`;
-    setsList.appendChild(div);
-  });
-  document.querySelectorAll('.btnEdit').forEach(b=>b.onclick=e=>{currentSet=sets[b.dataset.index]; showEditor();});
-  document.querySelectorAll('.btnPlay').forEach(b=>b.onclick=e=>{currentSet=sets[b.dataset.index]; startStudy(false);});
-  document.querySelectorAll('.btnDel').forEach(b=>b.onclick=e=>{sets.splice(b.dataset.index,1); save(); renderSets();});
+// --- Views ---
+const viewHome=$('#viewHome'), viewEditor=$('#viewEditor'), viewStudy=$('#viewStudy');
+const setsGrid=$('#setsGrid'), emptyMsg=$('#emptyMsg');
+function showHome(){viewHome.classList.remove('hidden');viewEditor.classList.add('hidden');viewStudy.classList.add('hidden');renderHome();}
+function showEditor(){viewHome.classList.add('hidden');viewEditor.classList.remove('hidden');viewStudy.classList.add('hidden');renderEditor();}
+function showStudy(){viewHome.classList.add('hidden');viewEditor.classList.add('hidden');viewStudy.classList.remove('hidden');}
+
+// --- Home ---
+function renderHome(){setsGrid.innerHTML=''; if(!sets.length){emptyMsg.classList.remove('hidden');return;} emptyMsg.classList.add('hidden');
+const tpl=$('#tplSet');
+sets.forEach(s=>{const el=tpl.content.cloneNode(true);
+el.querySelector('.set-title').textContent=s.title||'Sans titre';
+el.querySelector('.set-subject').textContent=s.subject||'—';
+el.querySelector('.set-count').textContent=`${s.cards?.length||0} cartes`;
+el.querySelector('.btn-edit').onclick=()=>{currentSetId=s.id; showEditor();};
+el.querySelector('.btn-play').onclick=()=>{currentSetId=s.id; startStudy(false);};
+el.querySelector('.btn-del').onclick=()=>{if(confirm('Supprimer ce set ?')){sets=sets.filter(x=>x.id!==s.id); save(); renderHome();}};
+setsGrid.appendChild(el);});
 }
 
-function renderEditor(){
-  setTitle.value=currentSet.title;
-  setSubject.value=currentSet.subject;
-  cardsList.innerHTML='';
-  currentSet.cards.forEach((c,idx)=>{
-    const div=document.createElement('div');
-    div.className='set-card';
-    div.innerHTML=`<input placeholder="Question" value="${c.front}" class="front">
-                     <input placeholder="Réponse" value="${c.back}" class="back">
-                     <input placeholder="URL image" value="${c.img||''}" class="img">
-                     <button data-idx="${idx}" class="btn-secondary btnDelCard">🗑️</button>`;
-    cardsList.appendChild(div);
-  });
-  document.querySelectorAll('.btnDelCard').forEach(b=>b.onclick=e=>{
-    currentSet.cards.splice(b.dataset.idx,1); renderEditor();
-  });
+// --- Editor ---
+const setTitle=$('#setTitle'), setSubject=$('#setSubject'), cardsList=$('#cardsList'), noCardsMsg=$('#noCardsMsg');
+function renderEditor(){const s=findSet(currentSetId); if(!s){showHome();return;} setTitle.value=s.title; setSubject.value=s.subject; cardsList.innerHTML=''; if(!s.cards?.length) noCardsMsg.classList.remove('hidden'); else noCardsMsg.classList.add('hidden');
+const tpl=$('#tplCardRow');
+s.cards.forEach((c)=>{const row=tpl.content.cloneNode(true);
+const f=row.querySelector('.input-front');
+const b=row.querySelector('.input-back');
+const img=row.querySelector('.input-img');
+f.value=c.front||''; b.value=c.back||''; img.value=c.img||'';
+f.oninput=()=>{c.front=f.value; save();}
+b.oninput=()=>{c.back=b.value; save();}
+img.oninput=()=>{c.img=img.value; save();}
+row.querySelector('.btn-del-card').onclick=()=>{s.cards=s.cards.filter(x=>x.id!==c.id); upsertSet(s); renderEditor();}
+cardsList.appendChild(row);
+});
 }
 
-document.getElementById('btnNewSet').onclick=()=>{
-  const s={title:'Nouveau set',subject:'',cards:[]};
-  sets.push(s); currentSet=s; save(); showEditor();
+$('#btnAddCard').onclick=()=>{
+const s=findSet(currentSetId); s.cards.push({id:uid(),front:'',back:'',img:''}); upsertSet(s); renderEditor();
 };
-document.getElementById('btnAddCard').onclick=()=>{
-  currentSet.cards.push({front:'',back:'',img:''}); renderEditor();
+$('#btnStudyFromEditor').onclick=()=>{
+const s=findSet(currentSetId); s.title=setTitle.value.trim(); s.subject=setSubject.value.trim(); upsertSet(s); startStudy(false);
 };
-document.getElementById('btnStartStudy').onclick=()=>{
-  currentSet.title=setTitle.value;
-  currentSet.subject=setSubject.value;
-  save();
-  startStudy(false);
+$('#btnBackHome1').onclick=showHome;
+
+// New set
+$('#btnNewSet').onclick=()=>{
+const s={id:uid(),title:'Nouveau set',subject:'',cards:[]}; upsertSet(s); currentSetId=s.id; showEditor();
 };
-document.getElementById('btnBackHome').onclick=()=>showHome();
+
+// --- Study ---
+const cardEl=$('#card');
+const frontEl=cardEl.querySelector('.card-front');
+const backEl=cardEl.querySelector('.card-back');
+const progressText=$('#progressText');
 
 function startStudy(restartWrong){
-  if(!currentSet.cards.length){alert('Ajoute des cartes !'); return;}
-  study.order=restartWrong?study.wrong.slice():currentSet.cards.map((c,i)=>i);
-  study.index=0; study.wrong=[]; study.score=0;
-  studyTitle.textContent=currentSet.title;
-  studySubject.textContent=currentSet.subject;
-  showStudy();
-  showCard();
+const s=findSet(currentSetId);
+if(!s||!s.cards.length){alert('Ajoute des cartes !'); return;}
+study.order=restartWrong ? study.wrong.slice() : s.cards.map(c=>c.id);
+study.i=0; study.wrong=[]; study.finished=false; study.score=0;
+$('#studySetTitle').textContent=s.title; $('#studySetSubject').textContent=s.subject;
+updateStudyCard(); showStudy();
 }
 
-function showCard(){
-  if(study.index>=study.order.length){
-    alert(`Terminé ! Score: ${study.score}/${study.order.length}`);
-    showHome();
-    return;
-  }
-  const c=currentSet.cards[study.order[study.index]];
-  frontText.textContent=c.front; backText.textContent=c.back;
-  frontImg.src=c.img||''; backImg.src=c.img||'';
-  document.querySelector('.card-inner').classList.remove('flipped');
+function currentCard(){return findSet(currentSetId).cards.find(c=>c.id===study.order[study.i])}
+
+function updateStudyCard(){
+const c=currentCard();
+if(!c){study.finished=true; progressText.textContent=`Terminé ! Score: ${study.score}/${study.order.length}`; return;}
+progressText.textContent=`Carte ${study.i+1} / ${study.order.length}`;
+frontEl.textContent=c.front; backEl.textContent=c.back;
+cardEl.style.transform=''; cardEl.classList.remove('flipped');
+cardEl.querySelector('img').src=c.img||'';
 }
 
-// rotation
-document.querySelector('.card').onclick=()=>{document.querySelector('.card-inner').classList.toggle('flipped');};
+// Flip
+cardEl.onclick=()=>{cardEl.classList.toggle('flipped');};
 
-// swipe
-let startX=null;
-studyCard.querySelector('.swipe-area').addEventListener('touchstart',e=>{startX=e.touches[0].clientX;});
-studyCard.querySelector('.swipe-area').addEventListener('touchend',e=>{
-  const dx=e.changedTouches[0].clientX-startX;
-  if(dx>50) markCard(true);
-  else if(dx<-50) markCard(false);
-});
+// Swipe
+let startX=0;
+cardEl.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;});
+cardEl.addEventListener('touchend',e=>{
+let dx=e.changedTouches[0].clientX-startX;
+if(Math.abs(dx)<50) return;
+markCard(dx>0);});
 
-function markCard(ok){
-  const idx=study.order[study.index];
-  if(!ok) study.wrong.push(idx); else study.score++;
-  study.index++; showCard();
+// Mouse drag for desktop
+let mouseDown=false;
+cardEl.addEventListener('mousedown',e=>{mouseDown=true; startX=e.clientX;});
+cardEl.addEventListener('mouseup',e=>{if(!mouseDown) return; mouseDown=false;
+let dx=e.clientX-startX; if(Math.abs(dx)<50) return; markCard(dx>0);});
+
+function markCard(isRight){
+if(!currentCard()) return;
+if(isRight) study.score++; else study.wrong.push(currentCard().id);
+study.i++;
+updateStudyCard();
 }
 
-document.getElementById('btnRestartAll').onclick=()=>startStudy(false);
-document.getElementById('btnAgainWrong').onclick=()=>startStudy(true);
+// Buttons
+$('#btnBackHome2').onclick=showHome;
+$('#btnRestartAll').onclick=()=>startStudy(false);
+$('#btnAgainWrong').onclick=()=>startStudy(true);
 
-// --- init ---
-showHome();
+// --- Init ---
+load(); renderHome();
 </script>
-
 </body>
 </html>
