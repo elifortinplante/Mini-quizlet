@@ -1,286 +1,286 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Quizlet ++</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#6366f1,#ec4899,#10b981);color:white;min-height:100vh;}
-.btn{padding:.7rem 1rem;border-radius:9999px;font-weight:700}
-.btn-primary{background:linear-gradient(90deg,#6366f1,#ec4899);color:white}
-.btn-secondary{background:white;color:#4f46e5;border:2px solid #4f46e5}
-.chip{background:#dbeafe;color:#1e3a8a;padding:.25rem .6rem;border-radius:9999px;font-size:.8rem;font-weight:700}
-.input{width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid #e5e7eb;background:white;color:black}
-.set-card{background:white;color:black;border-radius:20px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);position:relative}
-.mini-thumb{width:48px;height:48px;border-radius:12px;object-fit:cover;background:#eef}
-/* Carte étude */
-.stage{perspective:1200px;margin-top:20px;position:relative}
-.card{width:100%;height:400px;border-radius:28px;background:white;color:black;position:relative;transform-style:preserve-3d;transition:transform .6s;display:flex;align-items:center;justify-content:center;font-size:1.5rem;text-align:center;overflow:hidden}
-.card-face{position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;}
-.card-front{transform:rotateY(0deg);background:white;color:black;}
-.card-back{transform:rotateY(180deg);background:white;color:black;}
-.flipped{transform:rotateY(180deg);}
-.card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
-.card .text{position:relative;z-index:2;background:rgba(255,255,255,0.7);padding:10px;border-radius:10px;word-wrap:break-word;}
-#btnMal{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:3rem;}
-#btnBien{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:3rem;}
-#endControls{display:none;margin-top:20px;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcards App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb, #84fab0);
+      background-size: 400% 400%;
+      animation: gradientBG 10s ease infinite;
+    }
+
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    .hidden { display: none; }
+    .container { padding: 20px; text-align: center; }
+    h1 { color: white; }
+
+    .set-card {
+      background: white;
+      border-radius: 15px;
+      padding: 15px;
+      margin: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: inline-block;
+      width: 200px;
+    }
+    .set-card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+    .button {
+      background: #6a11cb;
+      color: white;
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .button:hover {
+      background: #2575fc;
+    }
+
+    .flashcard {
+      width: 300px;
+      height: 400px;
+      perspective: 1000px;
+      margin: 20px auto;
+      position: relative;
+    }
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+    .card-inner.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 15px;
+      font-size: 1.2em;
+      background: white;
+    }
+    .card-back {
+      transform: rotateY(180deg);
+    }
+    .flashcard img {
+      max-width: 90%;
+      max-height: 200px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      object-fit: contain;
+    }
+
+    .answer-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .answer-buttons button {
+      width: 45%;
+    }
+  </style>
 </head>
-<body class="pb-20">
-<header class="max-w-4xl mx-auto px-4 pt-5 flex items-center justify-between">
-<div class="flex items-center gap-3">
-  <div class="w-11 h-11 rounded-2xl bg-white text-indigo-600 grid place-items-center font-extrabold">MQ+</div>
-  <div>
-    <h1 class="text-2xl font-extrabold drop-shadow">Mini-Quizlet ++</h1>
-    <p class="text-indigo-100 text-sm -mt-1">Étudier en s’amusant ✨</p>
+<body>
+  <div id="home" class="container">
+    <h1>Mes Flashcards</h1>
+    <button class="button" onclick="showNewSetForm()">Nouveau set</button>
+    <div id="setsContainer"></div>
   </div>
-</div>
-<div class="flex items-center gap-2">
-  <button id="btnTheme" class="btn btn-secondary">🎨 Thème</button>
-  <button id="btnNewSet" class="btn btn-primary">+ Nouveau set</button>
-</div>
-</header>
 
-<main class="max-w-4xl mx-auto px-4 pt-4">
-<!-- HOME -->
-<section id="viewHome" class="space-y-4">
-  <div id="setsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-  <p id="emptyMsg" class="text-center text-white/90 hidden">Aucun set. Crée ton premier ✨</p>
-</section>
-
-<!-- EDITOR -->
-<section id="viewEditor" class="hidden">
-<div class="flex items-center justify-between mb-3">
-  <button class="btn btn-secondary" id="btnBackHome1">← Accueil</button>
-</div>
-<div class="grid sm:grid-cols-2 gap-3 mb-3">
-  <div>
-    <label class="text-sm font-bold">Titre du set</label>
-    <input id="setTitle" class="input" placeholder="Ex: Vocabulaire anglais">
+  <div id="newSet" class="container hidden">
+    <h2>Nouveau Set</h2>
+    <input id="setTitle" placeholder="Titre du set"><br><br>
+    <input id="setSubject" placeholder="Matière"><br><br>
+    <input id="setImage" placeholder="URL de l'image (optionnel)"><br><br>
+    <button class="button" onclick="createSet()">Créer</button>
+    <button class="button" onclick="goHome()">Annuler</button>
   </div>
-  <div>
-    <label class="text-sm font-bold">Matière</label>
-    <input id="setSubject" class="input" placeholder="Ex: Anglais">
+
+  <div id="editSet" class="container hidden">
+    <h2 id="editSetTitle"></h2>
+    <div id="cardsContainer"></div>
+    <button class="button" onclick="addCard()">Ajouter une carte</button><br><br>
+    <button class="button" onclick="saveSet()">Sauvegarder</button>
+    <button class="button" onclick="goHome()">Retour</button>
   </div>
-</div>
-<div class="mb-3">
-<label class="text-sm font-bold">Image du set (URL)</label>
-<input id="setImageURL" class="input" placeholder="https://...">
-</div>
-<div class="flex items-center justify-between mb-2">
-  <h3 class="font-extrabold">Cartes</h3>
-  <button id="btnAddCard" class="btn btn-primary">+ Ajouter</button>
-</div>
-<div id="cardsList" class="space-y-3"></div>
-<p id="noCardsMsg" class="hidden">Aucune carte.</p>
-</section>
 
-<!-- STUDY -->
-<section id="viewStudy" class="hidden">
-<div class="flex items-center justify-between mb-2">
-  <button class="btn btn-secondary" id="btnBackHome2">← Accueil</button>
-  <div class="flex items-center gap-2">
-    <span id="xpChip" class="chip">XP: 0</span>
-    <span id="streakChip" class="chip">🔥 0</span>
-    <span id="progressChip" class="chip">0/0</span>
+  <div id="playSet" class="container hidden">
+    <h2 id="playSetTitle"></h2>
+    <div id="flashcard" class="flashcard" onclick="flipCard()">
+      <div id="cardInner" class="card-inner">
+        <div id="cardFront" class="card-front"></div>
+        <div id="cardBack" class="card-back"></div>
+      </div>
+    </div>
+    <div class="answer-buttons">
+      <button class="button" onclick="markAnswer(true)">Bien</button>
+      <button class="button" onclick="markAnswer(false)">Mal</button>
+    </div>
   </div>
-</div>
-<div class="text-center mb-2">
-  <div id="studySetTitle" class="text-xl font-extrabold"></div>
-  <div id="studySetSubject" class="text-sm"></div>
-</div>
 
-<div class="stage">
-  <div id="card" class="card">
-    <img id="cardImg" src="" alt="">
-    <div class="card-face card-front"><div class="text" id="frontText"></div></div>
-    <div class="card-face card-back"><div class="text" id="backText"></div></div>
-  </div>
-  <button id="btnMal">❌</button>
-  <button id="btnBien">✅</button>
-</div>
+  <script>
+    let sets = JSON.parse(localStorage.getItem("flashSets")) || [];
+    let currentSetIndex = null;
+    let currentCardIndex = 0;
+    let score = 0;
 
-<div id="endControls" class="text-center">
-  <div id="rewardMsg" class="text-yellow-300 font-extrabold mb-2"></div>
-  <button id="btnRetryWrong" class="btn btn-primary mb-1">Recommencer erreurs</button>
-  <button id="btnRetryAll" class="btn btn-primary mb-1">Recommencer tout</button>
-  <button id="btnHomeEnd" class="btn btn-secondary">Accueil</button>
-</div>
-</section>
-</main>
+    function saveToStorage() {
+      localStorage.setItem("flashSets", JSON.stringify(sets));
+    }
 
-<!-- Templates -->
-<template id="tplSet">
-<div class="set-card p-4 flex items-center gap-3">
-<img class="mini-thumb"/>
-<div class="flex-1">
-  <div class="font-extrabold text-black/90 set-title">Titre</div>
-  <div class="text-sm text-slate-500 set-subject">Matière</div>
-</div>
-<div class="flex flex-col gap-2">
-  <button class="btn btn-primary btn-edit">Modifier</button>
-  <button class="btn btn-primary btn-play">Jouer</button>
-  <button class="btn btn-secondary btn-del">Supprimer</button>
-</div>
-</div>
-</template>
+    function showNewSetForm() {
+      document.getElementById("home").classList.add("hidden");
+      document.getElementById("newSet").classList.remove("hidden");
+    }
 
-<template id="tplCardRow">
-<div class="set-card p-3">
-  <input class="input input-front" placeholder="Question">
-  <input class="input input-back" placeholder="Réponse">
-  <input class="input input-img" placeholder="Image URL">
-  <button class="btn btn-secondary btn-del-card">🗑️ Supprimer</button>
-</div>
-</template>
+    function goHome() {
+      document.getElementById("home").classList.remove("hidden");
+      document.getElementById("newSet").classList.add("hidden");
+      document.getElementById("editSet").classList.add("hidden");
+      document.getElementById("playSet").classList.add("hidden");
+      displaySets();
+    }
 
-<script>
-// --- Données ---
-const LS_KEY='mq_plus_sets';
-let sets=[]; 
-let currentSetId=null;
-let study={i:0,order:[],wrong:[],score:0,mode:'flash'};
+    function createSet() {
+      let title = document.getElementById("setTitle").value;
+      let subject = document.getElementById("setSubject").value;
+      let image = document.getElementById("setImage").value;
+      if (!title) return;
+      sets.push({title, subject, image, cards: []});
+      saveToStorage();
+      goHome();
+    }
 
-const $=(s)=>document.querySelector(s);
-const $$=(s)=>document.querySelectorAll(s);
-const uid=()=>Math.random().toString(36).slice(2,9);
+    function displaySets() {
+      let container = document.getElementById("setsContainer");
+      container.innerHTML = "";
+      sets.forEach((set, index) => {
+        let div = document.createElement("div");
+        div.className = "set-card";
+        div.innerHTML = `
+          <img src="${set.image || 'https://via.placeholder.com/200x120?text=Aucune+image'}">
+          <h3>${set.title}</h3>
+          <p>${set.subject}</p>
+          <button class="button" onclick="editSet(${index})">Modifier</button>
+          <button class="button" onclick="playSet(${index})">Jouer</button>
+          <button class="button" onclick="deleteSet(${index})">Supprimer</button>
+        `;
+        container.appendChild(div);
+      });
+    }
 
-function load(){try{sets=JSON.parse(localStorage.getItem(LS_KEY)||'[]')}catch{sets=[]}}
-function save(){localStorage.setItem(LS_KEY,JSON.stringify(sets))}
+    function editSet(index) {
+      currentSetIndex = index;
+      document.getElementById("home").classList.add("hidden");
+      document.getElementById("editSet").classList.remove("hidden");
+      document.getElementById("editSetTitle").innerText = sets[index].title;
+      displayCards();
+    }
 
-// --- Affichage Sets ---
-function renderSets(){
-  const grid=$('#setsGrid'); grid.innerHTML='';
-  if(!sets.length){$('#emptyMsg').classList.remove('hidden'); return;} else $('#emptyMsg').classList.add('hidden');
-  sets.forEach(s=>{
-    const tpl=document.getElementById('tplSet').content.cloneNode(true);
-    tpl.querySelector('.set-title').textContent=s.title;
-    tpl.querySelector('.set-subject').textContent=s.subject;
-    tpl.querySelector('.mini-thumb').src=s.image||'';
-    tpl.querySelector('.btn-edit').onclick=()=>editSet(s.id);
-    tpl.querySelector('.btn-play').onclick=()=>startStudy(s.id);
-    tpl.querySelector('.btn-del').onclick=()=>{if(confirm('Supprimer ce set?')){sets=sets.filter(x=>x.id!==s.id);save();renderSets();}};
-    grid.appendChild(tpl);
-  });
-}
+    function displayCards() {
+      let container = document.getElementById("cardsContainer");
+      container.innerHTML = "";
+      sets[currentSetIndex].cards.forEach((card, idx) => {
+        let div = document.createElement("div");
+        div.innerHTML = `
+          <input placeholder="Question" value="${card.q}"><br>
+          <input placeholder="Réponse" value="${card.a}"><br>
+          <input placeholder="Image URL (optionnel)" value="${card.img || ''}"><br><br>
+        `;
+        container.appendChild(div);
+      });
+    }
 
-// --- Éditeur ---
-function editSet(id=null){
-  currentSetId=id; $('#viewHome').classList.add('hidden'); $('#viewEditor').classList.remove('hidden');
-  if(id){ 
-    const s=sets.find(x=>x.id===id); 
-    $('#setTitle').value=s.title;
-    $('#setSubject').value=s.subject;
-    $('#setImageURL').value=s.image||'';
-    renderCards(s.cards||[]);
-  } else {
-    $('#setTitle').value=''; $('#setSubject').value=''; $('#setImageURL').value=''; renderCards([]);
-  }
-}
+    function addCard() {
+      sets[currentSetIndex].cards.push({q:"", a:"", img:""});
+      displayCards();
+    }
 
-function renderCards(cards){
-  const list=$('#cardsList'); list.innerHTML='';
-  if(!cards?.length){$('#noCardsMsg').classList.remove('hidden'); return;} else $('#noCardsMsg').classList.add('hidden');
-  cards.forEach(c=>{
-    const tpl=document.getElementById('tplCardRow').content.cloneNode(true);
-    tpl.querySelector('.input-front').value=c.front;
-    tpl.querySelector('.input-back').value=c.back;
-    tpl.querySelector('.input-img').value=c.img||'';
-    tpl.querySelector('.btn-del-card').onclick=()=>{cards.splice(cards.indexOf(c),1);saveCurrentSet();renderCards(cards);};
-    tpl.querySelectorAll('input').forEach(inp=>{
-      inp.oninput=()=>{c.front=tpl.querySelector('.input-front').value; c.back=tpl.querySelector('.input-back').value; c.img=tpl.querySelector('.input-img').value; saveCurrentSet();}
-    });
-    list.appendChild(tpl);
-  });
-}
+    function saveSet() {
+      let container = document.getElementById("cardsContainer").children;
+      sets[currentSetIndex].cards = [];
+      for (let div of container) {
+        let inputs = div.querySelectorAll("input");
+        sets[currentSetIndex].cards.push({
+          q: inputs[0].value,
+          a: inputs[1].value,
+          img: inputs[2].value
+        });
+      }
+      saveToStorage();
+      goHome();
+    }
 
-function saveCurrentSet(){
-  if(!currentSetId){
-    const newSet={id:uid(),title:$('#setTitle').value,subject:$('#setSubject').value,image:$('#setImageURL').value,cards:[]};
-    sets.push(newSet); currentSetId=newSet.id;
-  } else {
-    const s=sets.find(x=>x.id===currentSetId);
-    s.title=$('#setTitle').value; s.subject=$('#setSubject').value; s.image=$('#setImageURL').value;
-  }
-  save(); renderSets();
-}
+    function playSet(index) {
+      currentSetIndex = index;
+      currentCardIndex = 0;
+      score = 0;
+      document.getElementById("home").classList.add("hidden");
+      document.getElementById("playSet").classList.remove("hidden");
+      document.getElementById("playSetTitle").innerText = sets[index].title;
+      showCard();
+    }
 
-// --- Ajouter carte ---
-$('#btnAddCard').onclick=()=>{
-  const s=sets.find(x=>x.id===currentSetId);
-  s.cards.push({front:'',back:'',img:''}); saveCurrentSet(); renderCards(s.cards);
-};
+    function showCard() {
+      let card = sets[currentSetIndex].cards[currentCardIndex];
+      document.getElementById("cardFront").innerHTML = `
+        ${card.img ? `<img src="${card.img}">` : ""}
+        <p>${card.q}</p>
+      `;
+      document.getElementById("cardBack").innerHTML = `
+        ${card.img ? `<img src="${card.img}">` : ""}
+        <p>${card.a}</p>
+      `;
+      document.getElementById("cardInner").classList.remove("flipped");
+    }
 
-// --- Navigation ---
-$('#btnNewSet').onclick=()=>editSet();
-$('#btnBackHome1').onclick=()=>{$('#viewEditor').classList.add('hidden');$('#viewHome').classList.remove('hidden');renderSets();}
-$('#btnBackHome2').onclick=()=>{$('#viewStudy').classList.add('hidden');$('#viewHome').classList.remove('hidden');renderSets();}
+    function flipCard() {
+      document.getElementById("cardInner").classList.toggle("flipped");
+    }
 
-// --- Étude ---
-function startStudy(id){
-  const s=sets.find(x=>x.id===id); 
-  currentSetId=id; study.i=0; study.order=s.cards.map((_,i)=>i); study.wrong=[]; study.score=0;
-  $('#studySetTitle').textContent=s.title; $('#studySetSubject').textContent=s.subject;
-  $('#viewHome').classList.add('hidden'); $('#viewStudy').classList.remove('hidden');
-  $('#endControls').style.display='none';
-  renderStudyCard();
-}
+    function markAnswer(correct) {
+      if (correct) score++;
+      currentCardIndex++;
+      if (currentCardIndex >= sets[currentSetIndex].cards.length) {
+        alert("Fini ! Score : " + score + "/" + sets[currentSetIndex].cards.length);
+        goHome();
+      } else {
+        showCard();
+      }
+    }
 
-function renderStudyCard(){
-  const s=sets.find(x=>x.id===currentSetId); if(!s.cards.length)return;
-  const c=s.cards[study.order[study.i]]; if(!c)return;
-  const img=$('#cardImg'); img.src=c.img||''; img.style.background=c.img?'':'white';
-  $('#frontText').textContent=c.front;
-  $('#backText').textContent=c.back;
-  $('#card').classList.remove('flipped');
-  $('#progressChip').textContent=`${study.i+1}/${s.cards.length}`;
-}
+    function deleteSet(index) {
+      sets.splice(index, 1);
+      saveToStorage();
+      displaySets();
+    }
 
-$('#card').onclick=()=>{$('#card').classList.toggle('flipped');};
-
-$('#btnBien').onclick=()=>{nextCard(true)};
-$('#btnMal').onclick=()=>{nextCard(false)};
-
-function nextCard(correct){
-  const s=sets.find(x=>x.id===currentSetId); 
-  if(!s.cards.length) return;
-  if(!correct) study.wrong.push(study.order[study.i]);
-  study.i++;
-  if(study.i>=study.order.length){
-    // FIN DU SET
-    $('#rewardMsg').textContent=`Set terminé ! Score: ${s.cards.length - study.wrong.length}/${s.cards.length}`;
-    $('#endControls').style.display='block';
-    return;
-  }
-  renderStudyCard();
-}
-
-// --- Boutons fin de set ---
-$('#btnRetryWrong').onclick=()=>{
-  const s=sets.find(x=>x.id===currentSetId);
-  if(!study.wrong.length)return;
-  study.order=study.wrong.slice();
-  study.i=0;
-  study.wrong=[];
-  $('#endControls').style.display='none';
-  renderStudyCard();
-};
-$('#btnRetryAll').onclick=()=>{
-  const s=sets.find(x=>x.id===currentSetId);
-  study.order=s.cards.map((_,i)=>i);
-  study.i=0;
-  study.wrong=[];
-  $('#endControls').style.display='none';
-  renderStudyCard();
-};
-$('#btnHomeEnd').onclick=()=>{
-  $('#viewStudy').classList.add('hidden');$('#viewHome').classList.remove('hidden');renderSets();
-};
-
-// --- Init ---
-load(); renderSets();
-</script>
+    displaySets();
+  </script>
 </body>
 </html>
