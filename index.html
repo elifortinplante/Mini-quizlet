@@ -6,281 +6,296 @@
   <title>Flashcards App</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      background: linear-gradient(135deg, #a18cd1, #fbc2eb, #84fab0);
-      background-size: 400% 400%;
-      animation: gradientBG 10s ease infinite;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb, #8fd3f4);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-
-    @keyframes gradientBG {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
-    }
-
-    .hidden { display: none; }
-    .container { padding: 20px; text-align: center; }
-    h1 { color: white; }
-
-    .set-card {
+    .container {
+      width: 90%;
+      max-width: 800px;
       background: white;
-      border-radius: 15px;
-      padding: 15px;
-      margin: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      display: inline-block;
-      width: 200px;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
-    .set-card img {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 10px;
-    }
-    .button {
-      background: #6a11cb;
-      color: white;
-      padding: 10px 15px;
-      margin: 5px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    .button:hover {
-      background: #2575fc;
-    }
-
-    .flashcard {
-      width: 300px;
-      height: 400px;
-      perspective: 1000px;
-      margin: 20px auto;
-      position: relative;
-    }
-    .card-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
+    h1, h2 {
       text-align: center;
-      transition: transform 0.8s;
-      transform-style: preserve-3d;
+      color: #333;
     }
-    .card-inner.flipped {
-      transform: rotateY(180deg);
-    }
-    .card-front, .card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    .hidden { display: none; }
+    .set {
       display: flex;
       align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      padding: 15px;
-      font-size: 1.2em;
-      background: white;
+      background: #f3f3f3;
+      border-radius: 15px;
+      padding: 10px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: 0.3s;
     }
+    .set:hover { background: #e8e8e8; }
+    .set img {
+      width: 60px; height: 60px;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-right: 15px;
+    }
+    .card-container {
+      perspective: 1000px;
+      margin: 20px 0;
+    }
+    .card {
+      width: 100%;
+      height: 300px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      cursor: pointer;
+    }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      color: #333;
+    }
+    .card-front { background: #fff; }
     .card-back {
+      background: #f0f0f0;
       transform: rotateY(180deg);
     }
-    .flashcard img {
-      max-width: 90%;
-      max-height: 200px;
+    .card-face img {
+      max-width: 100%; max-height: 150px;
       margin-bottom: 15px;
-      border-radius: 10px;
       object-fit: contain;
     }
-
     .answer-buttons {
       display: flex;
       justify-content: space-between;
       margin-top: 20px;
     }
     .answer-buttons button {
-      width: 45%;
+      flex: 1;
+      margin: 0 5px;
+      padding: 10px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
     }
+    .correct { background: #a0e7a0; }
+    .incorrect { background: #f28b82; }
+    .correct:hover { background: #77d677; }
+    .incorrect:hover { background: #e06666; }
+    #score-screen {
+      text-align: center;
+    }
+    #score-screen button {
+      margin: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: #a18cd1;
+      color: white;
+      transition: 0.3s;
+    }
+    #score-screen button:hover { background: #875fb3; }
   </style>
 </head>
 <body>
-  <div id="home" class="container">
-    <h1>Mes Flashcards</h1>
-    <button class="button" onclick="showNewSetForm()">Nouveau set</button>
-    <div id="setsContainer"></div>
-  </div>
+  <div class="container">
+    <div id="home-screen">
+      <h1>Mes Sets</h1>
+      <button onclick="showSetEditor()">➕ Nouveau set</button>
+      <div id="sets-list"></div>
+    </div>
 
-  <div id="newSet" class="container hidden">
-    <h2>Nouveau Set</h2>
-    <input id="setTitle" placeholder="Titre du set"><br><br>
-    <input id="setSubject" placeholder="Matière"><br><br>
-    <input id="setImage" placeholder="URL de l'image (optionnel)"><br><br>
-    <button class="button" onclick="createSet()">Créer</button>
-    <button class="button" onclick="goHome()">Annuler</button>
-  </div>
+    <div id="editor-screen" class="hidden">
+      <h2>Créer un Set</h2>
+      <input type="text" id="set-title" placeholder="Titre du set"><br><br>
+      <input type="text" id="set-subject" placeholder="Matière"><br><br>
+      <input type="text" id="set-image" placeholder="URL image pour l’accueil"><br><br>
+      <div id="cards-editor"></div>
+      <button onclick="addCardEditor()">➕ Ajouter une carte</button><br><br>
+      <button onclick="saveSet()">💾 Sauvegarder</button>
+      <button onclick="goHome()">🏠 Accueil</button>
+    </div>
 
-  <div id="editSet" class="container hidden">
-    <h2 id="editSetTitle"></h2>
-    <div id="cardsContainer"></div>
-    <button class="button" onclick="addCard()">Ajouter une carte</button><br><br>
-    <button class="button" onclick="saveSet()">Sauvegarder</button>
-    <button class="button" onclick="goHome()">Retour</button>
-  </div>
-
-  <div id="playSet" class="container hidden">
-    <h2 id="playSetTitle"></h2>
-    <div id="flashcard" class="flashcard" onclick="flipCard()">
-      <div id="cardInner" class="card-inner">
-        <div id="cardFront" class="card-front"></div>
-        <div id="cardBack" class="card-back"></div>
+    <div id="game-screen" class="hidden">
+      <h2 id="game-title"></h2>
+      <div class="card-container">
+        <div class="card" onclick="flipCard()">
+          <div class="card-face card-front">
+            <img id="card-image-front" alt="">
+            <div id="card-question"></div>
+          </div>
+          <div class="card-face card-back">
+            <img id="card-image-back" alt="">
+            <div id="card-answer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="answer-buttons">
+        <button class="incorrect" onclick="markAnswer(false)">Mauvais</button>
+        <button class="correct" onclick="markAnswer(true)">Bon</button>
       </div>
     </div>
-    <div class="answer-buttons">
-      <button class="button" onclick="markAnswer(true)">Bien</button>
-      <button class="button" onclick="markAnswer(false)">Mal</button>
+
+    <div id="score-screen" class="hidden">
+      <h2>Résultat</h2>
+      <p id="final-score"></p>
+      <button onclick="restartAll()">🔄 Recommencer tout</button>
+      <button onclick="restartErrors()">❌ Rejouer erreurs</button>
+      <button onclick="goHome()">🏠 Accueil</button>
     </div>
   </div>
 
   <script>
-    let sets = JSON.parse(localStorage.getItem("flashSets")) || [];
-    let currentSetIndex = null;
-    let currentCardIndex = 0;
-    let score = 0;
+    let sets = JSON.parse(localStorage.getItem("sets")) || [];
+    let currentSet = null;
+    let currentCards = [];
+    let currentIndex = 0;
+    let errors = [];
 
-    function saveToStorage() {
-      localStorage.setItem("flashSets", JSON.stringify(sets));
-    }
-
-    function showNewSetForm() {
-      document.getElementById("home").classList.add("hidden");
-      document.getElementById("newSet").classList.remove("hidden");
+    function saveSets() {
+      localStorage.setItem("sets", JSON.stringify(sets));
     }
 
     function goHome() {
-      document.getElementById("home").classList.remove("hidden");
-      document.getElementById("newSet").classList.add("hidden");
-      document.getElementById("editSet").classList.add("hidden");
-      document.getElementById("playSet").classList.add("hidden");
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("home-screen").classList.remove("hidden");
       displaySets();
     }
 
-    function createSet() {
-      let title = document.getElementById("setTitle").value;
-      let subject = document.getElementById("setSubject").value;
-      let image = document.getElementById("setImage").value;
-      if (!title) return;
-      sets.push({title, subject, image, cards: []});
-      saveToStorage();
+    function showSetEditor() {
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("editor-screen").classList.remove("hidden");
+      document.getElementById("cards-editor").innerHTML = "";
+    }
+
+    function addCardEditor() {
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <input type="text" placeholder="Question"><br>
+        <input type="text" placeholder="Réponse"><br>
+        <input type="text" placeholder="URL image"><br><br>
+      `;
+      document.getElementById("cards-editor").appendChild(div);
+    }
+
+    function saveSet() {
+      const title = document.getElementById("set-title").value;
+      const subject = document.getElementById("set-subject").value;
+      const image = document.getElementById("set-image").value;
+      const cards = [];
+      const inputs = document.querySelectorAll("#cards-editor div");
+      inputs.forEach(div => {
+        const q = div.children[0].value;
+        const a = div.children[2].value;
+        const img = div.children[4].value;
+        if (q && a) cards.push({ question: q, answer: a, image: img });
+      });
+      sets.push({ title, subject, image, cards });
+      saveSets();
       goHome();
     }
 
     function displaySets() {
-      let container = document.getElementById("setsContainer");
-      container.innerHTML = "";
-      sets.forEach((set, index) => {
-        let div = document.createElement("div");
-        div.className = "set-card";
+      const list = document.getElementById("sets-list");
+      list.innerHTML = "";
+      sets.forEach((s, i) => {
+        const div = document.createElement("div");
+        div.className = "set";
         div.innerHTML = `
-          <img src="${set.image || 'https://via.placeholder.com/200x120?text=Aucune+image'}">
-          <h3>${set.title}</h3>
-          <p>${set.subject}</p>
-          <button class="button" onclick="editSet(${index})">Modifier</button>
-          <button class="button" onclick="playSet(${index})">Jouer</button>
-          <button class="button" onclick="deleteSet(${index})">Supprimer</button>
+          <img src="${s.image || 'https://via.placeholder.com/60'}">
+          <div><strong>${s.title}</strong><br><small>${s.subject}</small></div>
         `;
-        container.appendChild(div);
+        div.onclick = () => startGame(i);
+        list.appendChild(div);
       });
     }
 
-    function editSet(index) {
-      currentSetIndex = index;
-      document.getElementById("home").classList.add("hidden");
-      document.getElementById("editSet").classList.remove("hidden");
-      document.getElementById("editSetTitle").innerText = sets[index].title;
-      displayCards();
-    }
-
-    function displayCards() {
-      let container = document.getElementById("cardsContainer");
-      container.innerHTML = "";
-      sets[currentSetIndex].cards.forEach((card, idx) => {
-        let div = document.createElement("div");
-        div.innerHTML = `
-          <input placeholder="Question" value="${card.q}"><br>
-          <input placeholder="Réponse" value="${card.a}"><br>
-          <input placeholder="Image URL (optionnel)" value="${card.img || ''}"><br><br>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function addCard() {
-      sets[currentSetIndex].cards.push({q:"", a:"", img:""});
-      displayCards();
-    }
-
-    function saveSet() {
-      let container = document.getElementById("cardsContainer").children;
-      sets[currentSetIndex].cards = [];
-      for (let div of container) {
-        let inputs = div.querySelectorAll("input");
-        sets[currentSetIndex].cards.push({
-          q: inputs[0].value,
-          a: inputs[1].value,
-          img: inputs[2].value
-        });
-      }
-      saveToStorage();
-      goHome();
-    }
-
-    function playSet(index) {
-      currentSetIndex = index;
-      currentCardIndex = 0;
-      score = 0;
-      document.getElementById("home").classList.add("hidden");
-      document.getElementById("playSet").classList.remove("hidden");
-      document.getElementById("playSetTitle").innerText = sets[index].title;
+    function startGame(i) {
+      currentSet = sets[i];
+      currentCards = [...currentSet.cards];
+      currentIndex = 0;
+      errors = [];
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("game-screen").classList.remove("hidden");
+      document.getElementById("game-title").textContent = currentSet.title;
       showCard();
     }
 
     function showCard() {
-      let card = sets[currentSetIndex].cards[currentCardIndex];
-      document.getElementById("cardFront").innerHTML = `
-        ${card.img ? `<img src="${card.img}">` : ""}
-        <p>${card.q}</p>
-      `;
-      document.getElementById("cardBack").innerHTML = `
-        ${card.img ? `<img src="${card.img}">` : ""}
-        <p>${card.a}</p>
-      `;
-      document.getElementById("cardInner").classList.remove("flipped");
+      const card = currentCards[currentIndex];
+      document.getElementById("card-question").textContent = card.question;
+      document.getElementById("card-answer").textContent = card.answer;
+      document.getElementById("card-image-front").src = card.image || "";
+      document.getElementById("card-image-back").src = card.image || "";
+      document.querySelector(".card").classList.remove("flipped");
     }
 
     function flipCard() {
-      document.getElementById("cardInner").classList.toggle("flipped");
+      document.querySelector(".card").classList.toggle("flipped");
     }
 
     function markAnswer(correct) {
-      if (correct) score++;
-      currentCardIndex++;
-      if (currentCardIndex >= sets[currentSetIndex].cards.length) {
-        alert("Fini ! Score : " + score + "/" + sets[currentSetIndex].cards.length);
-        goHome();
-      } else {
+      if (!correct) errors.push(currentCards[currentIndex]);
+      currentIndex++;
+      if (currentIndex < currentCards.length) {
         showCard();
+      } else {
+        endGame();
       }
     }
 
-    function deleteSet(index) {
-      sets.splice(index, 1);
-      saveToStorage();
-      displaySets();
+    function endGame() {
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("score-screen").classList.remove("hidden");
+      document.getElementById("final-score").textContent =
+        `Score: ${currentCards.length - errors.length}/${currentCards.length}`;
     }
 
-    displaySets();
+    function restartAll() {
+      currentCards = [...currentSet.cards];
+      currentIndex = 0;
+      errors = [];
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("game-screen").classList.remove("hidden");
+      showCard();
+    }
+
+    function restartErrors() {
+      if (errors.length === 0) {
+        alert("Aucune erreur à rejouer !");
+        return;
+      }
+      currentCards = [...errors];
+      currentIndex = 0;
+      errors = [];
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("game-screen").classList.remove("hidden");
+      showCard();
+    }
+
+    goHome();
   </script>
 </body>
 </html>
