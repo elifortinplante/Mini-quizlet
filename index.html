@@ -1,280 +1,301 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Quizlet ++</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#6366f1,#ec4899,#10b981);color:white;min-height:100vh;}
-.btn{padding:.7rem 1rem;border-radius:9999px;font-weight:700}
-.btn-primary{background:linear-gradient(90deg,#6366f1,#ec4899);color:white}
-.btn-secondary{background:white;color:#4f46e5;border:2px solid #4f46e5}
-.chip{background:#dbeafe;color:#1e3a8a;padding:.25rem .6rem;border-radius:9999px;font-size:.8rem;font-weight:700}
-.input{width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid #e5e7eb;background:white;color:black}
-.set-card{background:white;color:black;border-radius:20px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);position:relative}
-.mini-thumb{width:48px;height:48px;border-radius:12px;object-fit:cover;background:#eef}
-/* Carte étude */
-.stage{perspective:1200px;margin-top:20px;position:relative}
-.card{width:100%;height:400px;border-radius:28px;background:white;color:black;position:relative;transform-style:preserve-3d;transition:transform .6s;display:flex;align-items:center;justify-content:center;font-size:1.5rem;text-align:center;overflow:hidden}
-.card-face{position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;}
-.card-front{transform:rotateY(0deg);background:white;color:black;}
-.card-back{transform:rotateY(180deg);background:white;color:black;}
-.flipped{transform:rotateY(180deg);}
-.card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
-.card .text{position:relative;z-index:2;background:rgba(255,255,255,0.7);padding:10px;border-radius:10px;}
-#btnMal{position:absolute;left:10px;bottom:50%;transform:translateY(50%);font-size:3rem;}
-#btnBien{position:absolute;right:10px;bottom:50%;transform:translateY(50%);font-size:3rem;}
-</style>
-</head>
-<body class="pb-20">
-<header class="max-w-4xl mx-auto px-4 pt-5 flex items-center justify-between">
-<div class="flex items-center gap-3">
-  <div class="w-11 h-11 rounded-2xl bg-white text-indigo-600 grid place-items-center font-extrabold">MQ+</div>
-  <div>
-    <h1 class="text-2xl font-extrabold drop-shadow">Mini-Quizlet ++</h1>
-    <p class="text-indigo-100 text-sm -mt-1">Étudier en s’amusant ✨</p>
-  </div>
-</div>
-<div class="flex items-center gap-2">
-  <button id="btnTheme" class="btn btn-secondary">🎨 Thème</button>
-  <button id="btnNewSet" class="btn btn-primary">+ Nouveau set</button>
-</div>
-</header>
-
-<main class="max-w-4xl mx-auto px-4 pt-4">
-<!-- HOME -->
-<section id="viewHome" class="space-y-4">
-  <div id="setsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-  <p id="emptyMsg" class="text-center text-white/90 hidden">Aucun set. Crée ton premier ✨</p>
-</section>
-
-<!-- EDITOR -->
-<section id="viewEditor" class="hidden">
-<div class="flex items-center justify-between mb-3">
-  <button class="btn btn-secondary" id="btnBackHome1">← Accueil</button>
-</div>
-<div class="grid sm:grid-cols-2 gap-3 mb-3">
-  <div>
-    <label class="text-sm font-bold">Titre du set</label>
-    <input id="setTitle" class="input" placeholder="Ex: Vocabulaire anglais">
-  </div>
-  <div>
-    <label class="text-sm font-bold">Matière</label>
-    <input id="setSubject" class="input" placeholder="Ex: Anglais">
-  </div>
-</div>
-<div class="mb-3">
-<label class="text-sm font-bold">Image du set (URL)</label>
-<input id="setImageURL" class="input" placeholder="https://...">
-</div>
-<div class="flex items-center justify-between mb-2">
-  <h3 class="font-extrabold">Cartes</h3>
-  <button id="btnAddCard" class="btn btn-primary">+ Ajouter</button>
-</div>
-<div id="cardsList" class="space-y-3"></div>
-<p id="noCardsMsg" class="hidden">Aucune carte.</p>
-</section>
-
-<!-- STUDY -->
-<section id="viewStudy" class="hidden">
-<div class="flex items-center justify-between mb-2">
-  <button class="btn btn-secondary" id="btnBackHome2">← Accueil</button>
-  <div class="flex items-center gap-2">
-    <span id="xpChip" class="chip">XP: 0</span>
-    <span id="streakChip" class="chip">🔥 0</span>
-    <span id="progressChip" class="chip">0/0</span>
-  </div>
-</div>
-<div class="text-center mb-2">
-  <div id="studySetTitle" class="text-xl font-extrabold"></div>
-  <div id="studySetSubject" class="text-sm"></div>
-</div>
-
-<div class="stage">
-  <div id="card" class="card">
-    <img id="cardImg" src="" alt="">
-    <div class="card-face card-front"><div class="text" id="frontText"></div></div>
-    <div class="card-face card-back"><div class="text" id="backText"></div></div>
-  </div>
-  <button id="btnMal">❌</button>
-  <button id="btnBien">✅</button>
-</div>
-
-<div class="text-center mt-4">
-  <div id="rewardMsg" class="text-yellow-300 font-extrabold"></div>
-  <div id="endButtons" class="hidden space-x-2 mt-3">
-    <button id="btnRetryWrong" class="btn btn-secondary">Recommencer Erreurs</button>
-    <button id="btnRetryAll" class="btn btn-primary">Recommencer Tout</button>
-    <button id="btnHome" class="btn btn-secondary">Accueil</button>
-  </div>
-</div>
-</section>
-</main>
-
-<!-- Templates -->
-<template id="tplSet">
-<div class="set-card p-4 flex items-center gap-3">
-<img class="mini-thumb"/>
-<div class="flex-1">
-  <div class="font-extrabold text-black/90 set-title">Titre</div>
-  <div class="text-sm text-slate-500 set-subject">Matière</div>
-</div>
-<div class="flex flex-col gap-2">
-  <button class="btn btn-primary btn-edit">Modifier</button>
-  <button class="btn btn-secondary btn-del">Supprimer</button>
-</div>
-</div>
-</template>
-
-<template id="tplCardRow">
-<div class="set-card p-3">
-  <input class="input input-front" placeholder="Question">
-  <input class="input input-back" placeholder="Réponse">
-  <input class="input input-img" placeholder="Image URL">
-  <button class="btn btn-secondary btn-del-card">🗑️ Supprimer</button>
-</div>
-</template>
-
-<script>
-// --- Données ---
-const LS_KEY='mq_plus_sets';
-let sets=[]; 
-let currentSetId=null;
-let study={i:0,order:[],wrong:[],score:0,mode:'flash'};
-
-const $=(s)=>document.querySelector(s);
-const $$=(s)=>document.querySelectorAll(s);
-const uid=()=>Math.random().toString(36).slice(2,9);
-
-function load(){try{sets=JSON.parse(localStorage.getItem(LS_KEY)||'[]')}catch{sets=[]}}
-function save(){localStorage.setItem(LS_KEY,JSON.stringify(sets))}
-
-// --- Affichage Sets ---
-function renderSets(){
-  const grid=$('#setsGrid'); grid.innerHTML='';
-  if(!sets.length){$('#emptyMsg').classList.remove('hidden'); return;} else $('#emptyMsg').classList.add('hidden');
-  sets.forEach(s=>{
-    const tpl=document.getElementById('tplSet').content.cloneNode(true);
-    tpl.querySelector('.set-title').textContent=s.title;
-    tpl.querySelector('.set-subject').textContent=s.subject;
-    tpl.querySelector('.mini-thumb').src=s.image||'';
-    tpl.querySelector('.btn-edit').onclick=()=>editSet(s.id);
-    tpl.querySelector('.btn-del').onclick=()=>{
-      if(confirm('Supprimer ce set?')){
-        sets=sets.filter(x=>x.id!==s.id);
-        save(); renderSets();
-      }
-    };
-    tpl.querySelector('.set-card').onclick=(e)=>{
-      if(!e.target.classList.contains('btn-edit') && !e.target.classList.contains('btn-del')) startStudy(s.id);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcards App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb, #8fd3f4);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    grid.appendChild(tpl);
-  });
-}
+    .container {
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+    .hidden { display: none; }
+    .set {
+      display: flex;
+      align-items: center;
+      background: #f3f3f3;
+      border-radius: 15px;
+      padding: 10px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .set:hover { background: #e8e8e8; }
+    .set img {
+      width: 60px; height: 60px;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-right: 15px;
+    }
+    .card-container {
+      perspective: 1000px;
+      margin: 20px 0;
+    }
+    .card {
+      width: 100%;
+      height: 300px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      cursor: pointer;
+    }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      color: #333;
+    }
+    .card-front { background: #fff; }
+    .card-back {
+      background: #f0f0f0;
+      transform: rotateY(180deg);
+    }
+    .card-face img {
+      max-width: 100%; max-height: 150px;
+      margin-bottom: 15px;
+      object-fit: contain;
+    }
+    .answer-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .answer-buttons button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 10px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .correct { background: #a0e7a0; }
+    .incorrect { background: #f28b82; }
+    .correct:hover { background: #77d677; }
+    .incorrect:hover { background: #e06666; }
+    #score-screen {
+      text-align: center;
+    }
+    #score-screen button {
+      margin: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: #a18cd1;
+      color: white;
+      transition: 0.3s;
+    }
+    #score-screen button:hover { background: #875fb3; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="home-screen">
+      <h1>Mes Sets</h1>
+      <button onclick="showSetEditor()">➕ Nouveau set</button>
+      <div id="sets-list"></div>
+    </div>
 
-// --- Éditeur ---
-function editSet(id=null){
-  currentSetId=id; $('#viewHome').classList.add('hidden'); $('#viewEditor').classList.remove('hidden');
-  if(id){ 
-    const s=sets.find(x=>x.id===id); 
-    $('#setTitle').value=s.title;
-    $('#setSubject').value=s.subject;
-    $('#setImageURL').value=s.image||'';
-    renderCards(s.cards||[]);
-  } else {
-    $('#setTitle').value=''; $('#setSubject').value=''; $('#setImageURL').value=''; renderCards([]);
-  }
-}
+    <div id="editor-screen" class="hidden">
+      <h2>Créer un Set</h2>
+      <input type="text" id="set-title" placeholder="Titre du set"><br><br>
+      <input type="text" id="set-subject" placeholder="Matière"><br><br>
+      <input type="text" id="set-image" placeholder="URL image pour l’accueil"><br><br>
+      <div id="cards-editor"></div>
+      <button onclick="addCardEditor()">➕ Ajouter une carte</button><br><br>
+      <button onclick="saveSet()">💾 Sauvegarder</button>
+      <button onclick="goHome()">🏠 Accueil</button>
+    </div>
 
-function renderCards(cards){
-  const list=$('#cardsList'); list.innerHTML='';
-  if(!cards?.length){$('#noCardsMsg').classList.remove('hidden'); return;} else $('#noCardsMsg').classList.add('hidden');
-  cards.forEach(c=>{
-    const tpl=document.getElementById('tplCardRow').content.cloneNode(true);
-    tpl.querySelector('.input-front').value=c.front;
-    tpl.querySelector('.input-back').value=c.back;
-    tpl.querySelector('.input-img').value=c.img||'';
-    tpl.querySelector('.btn-del-card').onclick=()=>{cards.splice(cards.indexOf(c),1);saveCurrentSet();renderCards(cards);};
-    tpl.querySelectorAll('input').forEach(inp=>{
-      inp.oninput=()=>{c.front=tpl.querySelector('.input-front').value; c.back=tpl.querySelector('.input-back').value; c.img=tpl.querySelector('.input-img').value; saveCurrentSet();}
-    });
-    list.appendChild(tpl);
-  });
-}
+    <div id="game-screen" class="hidden">
+      <h2 id="game-title"></h2>
+      <div class="card-container">
+        <div class="card" onclick="flipCard()">
+          <div class="card-face card-front">
+            <img id="card-image-front" alt="">
+            <div id="card-question"></div>
+          </div>
+          <div class="card-face card-back">
+            <img id="card-image-back" alt="">
+            <div id="card-answer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="answer-buttons">
+        <button class="incorrect" onclick="markAnswer(false)">Mauvais</button>
+        <button class="correct" onclick="markAnswer(true)">Bon</button>
+      </div>
+    </div>
 
-function saveCurrentSet(){
-  if(!currentSetId){
-    const newSet={id:uid(),title:$('#setTitle').value,subject:$('#setSubject').value,image:$('#setImageURL').value,cards:[]};
-    sets.push(newSet); currentSetId=newSet.id;
-  } else {
-    const s=sets.find(x=>x.id===currentSetId);
-    s.title=$('#setTitle').value; s.subject=$('#setSubject').value; s.image=$('#setImageURL').value;
-  }
-  save(); renderSets();
-}
+    <div id="score-screen" class="hidden">
+      <h2>Résultat</h2>
+      <p id="final-score"></p>
+      <button onclick="restartAll()">🔄 Recommencer tout</button>
+      <button onclick="restartErrors()">❌ Rejouer erreurs</button>
+      <button onclick="goHome()">🏠 Accueil</button>
+    </div>
+  </div>
 
-// --- Ajouter carte ---
-$('#btnAddCard').onclick=()=>{
-  const s=sets.find(x=>x.id===currentSetId);
-  s.cards.push({front:'',back:'',img:''}); saveCurrentSet(); renderCards(s.cards);
-};
+  <script>
+    let sets = JSON.parse(localStorage.getItem("sets")) || [];
+    let currentSet = null;
+    let currentCards = [];
+    let currentIndex = 0;
+    let errors = [];
 
-// --- Navigation ---
-$('#btnNewSet').onclick=()=>editSet();
-$('#btnBackHome1').onclick=()=>{$('#viewEditor').classList.add('hidden');$('#viewHome').classList.remove('hidden');renderSets();}
-$('#btnBackHome2').onclick=()=>{$('#viewStudy').classList.add('hidden');$('#viewHome').classList.remove('hidden');renderSets();}
+    function saveSets() {
+      localStorage.setItem("sets", JSON.stringify(sets));
+    }
 
-// --- Étude ---
-function startStudy(id){
-  const s=sets.find(x=>x.id===id); 
-  currentSetId=id; study.i=0; study.order=s.cards.map((_,i)=>i); study.wrong=[]; study.score=0;
-  $('#studySetTitle').textContent=s.title; $('#studySetSubject').textContent=s.subject;
-  $('#viewHome').classList.add('hidden'); $('#viewStudy').classList.remove('hidden');
-  renderStudyCard();
-  $('#endButtons').classList.add('hidden');
-}
+    function goHome() {
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("home-screen").classList.remove("hidden");
+      displaySets();
+    }
 
-function renderStudyCard(){
-  const s=sets.find(x=>x.id===currentSetId); if(!s.cards.length) return;
-  const c=s.cards[study.order[study.i]]; if(!c) return;
-  $('#cardImg').src=c.img||'';
-  $('#frontText').textContent=c.front;
-  $('#backText').textContent=c.back;
-  $('#card').classList.remove('flipped');
-}
+    function showSetEditor() {
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("editor-screen").classList.remove("hidden");
+      document.getElementById("cards-editor").innerHTML = "";
+    }
 
-$('#card').onclick=()=>{$('#card').classList.toggle('flipped');};
+    function addCardEditor() {
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <input type="text" placeholder="Question"><br>
+        <input type="text" placeholder="Réponse"><br>
+        <input type="text" placeholder="URL image"><br><br>
+      `;
+      document.getElementById("cards-editor").appendChild(div);
+    }
 
-$('#btnBien').onclick=()=>{nextCard(true);};
-$('#btnMal').onclick=()=>{nextCard(false);};
+    function saveSet() {
+      const title = document.getElementById("set-title").value;
+      const subject = document.getElementById("set-subject").value;
+      const image = document.getElementById("set-image").value;
+      const cards = [];
+      const inputs = document.querySelectorAll("#cards-editor div");
+      inputs.forEach(div => {
+        const q = div.children[0].value;
+        const a = div.children[2].value;
+        const img = div.children[4].value;
+        if (q && a) cards.push({ question: q, answer: a, image: img });
+      });
+      sets.push({ title, subject, image, cards });
+      saveSets();
+      goHome();
+    }
 
-function nextCard(correct){
-  const s=sets.find(x=>x.id===currentSetId); 
-  if(!s.cards.length) return;
-  if(!correct) study.wrong.push(study.order[study.i]);
-  study.i++;
-  if(study.i>=study.order.length){
-    $('#rewardMsg').textContent=`Set terminé! Score: ${study.order.length - study.wrong.length}/${study.order.length}`;
-    $('#endButtons').classList.remove('hidden');
-    return;
-  }
-  renderStudyCard();
-}
+    function displaySets() {
+      const list = document.getElementById("sets-list");
+      list.innerHTML = "";
+      sets.forEach((s, i) => {
+        const div = document.createElement("div");
+        div.className = "set";
+        div.innerHTML = `
+          <img src="${s.image || 'https://via.placeholder.com/60'}">
+          <div><strong>${s.title}</strong><br><small>${s.subject}</small></div>
+        `;
+        div.onclick = () => startGame(i);
+        list.appendChild(div);
+      });
+    }
 
-// --- End Buttons ---
-$('#btnRetryWrong').onclick=()=>{
-  if(study.wrong.length===0){alert('Pas d’erreurs à rejouer'); return;}
-  study.order=study.wrong; study.wrong=[]; study.i=0; renderStudyCard(); $('#endButtons').classList.add('hidden'); $('#rewardMsg').textContent='';
-}
-$('#btnRetryAll').onclick=()=>{
-  const s=sets.find(x=>x.id===currentSetId);
-  study.order=s.cards.map((_,i)=>i); study.wrong=[]; study.i=0; renderStudyCard(); $('#endButtons').classList.add('hidden'); $('#rewardMsg').textContent='';
-}
-$('#btnHome').onclick=()=>{$('#viewStudy').classList.add('hidden'); $('#viewHome').classList.remove('hidden'); renderSets();}
+    function startGame(i) {
+      currentSet = sets[i];
+      currentCards = [...currentSet.cards];
+      currentIndex = 0;
+      errors = [];
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("game-screen").classList.remove("hidden");
+      document.getElementById("game-title").textContent = currentSet.title;
+      showCard();
+    }
 
-// --- Init ---
-load(); renderSets();
-</script>
+    function showCard() {
+      const card = currentCards[currentIndex];
+      document.getElementById("card-question").textContent = card.question;
+      document.getElementById("card-answer").textContent = card.answer;
+      document.getElementById("card-image-front").src = card.image || "";
+      document.getElementById("card-image-back").src = card.image || "";
+      document.querySelector(".card").classList.remove("flipped");
+    }
+
+    function flipCard() {
+      document.querySelector(".card").classList.toggle("flipped");
+    }
+
+    function markAnswer(correct) {
+      if (!correct) errors.push(currentCards[currentIndex]);
+      currentIndex++;
+      if (currentIndex < currentCards.length) {
+        showCard();
+      } else {
+        endGame();
+      }
+    }
+
+    function endGame() {
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("score-screen").classList.remove("hidden");
+      document.getElementById("final-score").textContent =
+        `Score: ${currentCards.length - errors.length}/${currentCards.length}`;
+    }
+
+    function restartAll() {
+      currentCards = [...currentSet.cards];
+      currentIndex = 0;
+      errors = [];
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("game-screen").classList.remove("hidden");
+      showCard();
+    }
+
+    function restartErrors() {
+      if (errors.length === 0) {
+        alert("Aucune erreur à rejouer !");
+        return;
+      }
+      currentCards = [...errors];
+      currentIndex = 0;
+      errors = [];
+      document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById("game-screen").classList.remove("hidden");
+      showCard();
+    }
+
+    goHome();
+  </script>
 </body>
 </html>
