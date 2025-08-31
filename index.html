@@ -22,9 +22,10 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
 .card-back{transform:rotateY(180deg);background:white;color:black;}
 .flipped{transform:rotateY(180deg);}
 .card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
-.card .text{position:relative;z-index:2;background:rgba(255,255,255,0.7);padding:10px;border-radius:10px;}
-#btnMal{position:absolute;left:10px;bottom:50%;transform:translateY(50%);font-size:3rem;}
-#btnBien{position:absolute;right:10px;bottom:50%;transform:translateY(50%);font-size:3rem;}
+.card .text{position:relative;z-index:2;background:rgba(255,255,255,0.7);padding:10px;border-radius:10px;word-wrap:break-word;}
+#btnMal{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:3rem;}
+#btnBien{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:3rem;}
+#endControls{display:none;margin-top:20px;}
 </style>
 </head>
 <body class="pb-20">
@@ -101,8 +102,11 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;bac
   <button id="btnBien">✅</button>
 </div>
 
-<div class="text-center mt-4">
-  <div id="rewardMsg" class="text-yellow-300 font-extrabold"></div>
+<div id="endControls" class="text-center">
+  <div id="rewardMsg" class="text-yellow-300 font-extrabold mb-2"></div>
+  <button id="btnRetryWrong" class="btn btn-primary mb-1">Recommencer erreurs</button>
+  <button id="btnRetryAll" class="btn btn-primary mb-1">Recommencer tout</button>
+  <button id="btnHomeEnd" class="btn btn-secondary">Accueil</button>
 </div>
 </section>
 </main>
@@ -142,112 +146,141 @@ let study={i:0,order:[],wrong:[],score:0,mode:'flash'};
 const $=(s)=>document.querySelector(s);
 const $$=(s)=>document.querySelectorAll(s);
 const uid=()=>Math.random().toString(36).slice(2,9);
-const norm=(t)=>t?.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim()||'';
 
-function load(){try{sets=JSON.parse(localStorage.getItem(LS_KEY)||'[]');}catch{sets=[];}}
-function save(){localStorage.setItem(LS_KEY,JSON.stringify(sets));}
+function load(){try{sets=JSON.parse(localStorage.getItem(LS_KEY)||'[]')}catch{sets=[]}}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(sets))}
 
-// --- Affichage Home ---
-function renderHome(){
-  $('#setsGrid').innerHTML='';
-  if(!sets.length){$('#emptyMsg').classList.remove('hidden');} else {$('#emptyMsg').classList.add('hidden');}
+// --- Affichage Sets ---
+function renderSets(){
+  const grid=$('#setsGrid'); grid.innerHTML='';
+  if(!sets.length){$('#emptyMsg').classList.remove('hidden'); return;} else $('#emptyMsg').classList.add('hidden');
   sets.forEach(s=>{
     const tpl=document.getElementById('tplSet').content.cloneNode(true);
     tpl.querySelector('.set-title').textContent=s.title;
     tpl.querySelector('.set-subject').textContent=s.subject;
-    const imgEl=tpl.querySelector('img');
-    imgEl.src=s.image||'';
-    tpl.querySelector('.btn-edit').onclick=()=>openEditor(s.id);
+    tpl.querySelector('.mini-thumb').src=s.image||'';
+    tpl.querySelector('.btn-edit').onclick=()=>editSet(s.id);
     tpl.querySelector('.btn-play').onclick=()=>startStudy(s.id);
-    tpl.querySelector('.btn-del').onclick=()=>{sets=sets.filter(x=>x.id!==s.id);save();renderHome();};
-    $('#setsGrid').appendChild(tpl);
+    tpl.querySelector('.btn-del').onclick=()=>{if(confirm('Supprimer ce set?')){sets=sets.filter(x=>x.id!==s.id);save();renderSets();}};
+    grid.appendChild(tpl);
   });
-  $('#viewHome').classList.remove('hidden');
-  $('#viewEditor').classList.add('hidden');
-  $('#viewStudy').classList.add('hidden');
 }
 
-// --- Editor ---
-function openEditor(id){
-  currentSetId=id||uid();
-  let s=sets.find(x=>x.id===currentSetId);
-  if(!s){s={id:currentSetId,title:'',subject:'',image:'',cards:[]};sets.push(s);}
-  $('#setTitle').value=s.title;
-  $('#setSubject').value=s.subject;
-  $('#setImageURL').value=s.image;
-  const cl=$('#cardsList'); cl.innerHTML='';
-  if(!s.cards.length)$('#noCardsMsg').classList.remove('hidden'); else $('#noCardsMsg').classList.add('hidden');
-  s.cards.forEach(c=>{addCardRow(c)});
-  $('#viewHome').classList.add('hidden');
-  $('#viewEditor').classList.remove('hidden');
-  $('#viewStudy').classList.add('hidden');
-  save();
+// --- Éditeur ---
+function editSet(id=null){
+  currentSetId=id; $('#viewHome').classList.add('hidden'); $('#viewEditor').classList.remove('hidden');
+  if(id){ 
+    const s=sets.find(x=>x.id===id); 
+    $('#setTitle').value=s.title;
+    $('#setSubject').value=s.subject;
+    $('#setImageURL').value=s.image||'';
+    renderCards(s.cards||[]);
+  } else {
+    $('#setTitle').value=''; $('#setSubject').value=''; $('#setImageURL').value=''; renderCards([]);
+  }
 }
-function addCardRow(c){
-  const tpl=document.getElementById('tplCardRow').content.cloneNode(true);
-  const front=tpl.querySelector('.input-front');
-  const back=tpl.querySelector('.input-back');
-  const img=tpl.querySelector('.input-img');
-  if(c){front.value=c.front;back.value=c.back;img.value=c.image||'';}
-  tpl.querySelector('.btn-del-card').onclick=e=>{
-    e.target.closest('.set-card').remove();
-    updateSetCards();
-  };
-  front.oninput=back.oninput=img.oninput=updateSetCards;
-  $('#cardsList').appendChild(tpl);
-}
-function updateSetCards(){
-  let s=sets.find(x=>x.id===currentSetId);
-  s.cards=[];
-  $$('#cardsList .set-card').forEach(r=>{
-    s.cards.push({front:r.querySelector('.input-front').value,back:r.querySelector('.input-back').value,image:r.querySelector('.input-img').value});
+
+function renderCards(cards){
+  const list=$('#cardsList'); list.innerHTML='';
+  if(!cards?.length){$('#noCardsMsg').classList.remove('hidden'); return;} else $('#noCardsMsg').classList.add('hidden');
+  cards.forEach(c=>{
+    const tpl=document.getElementById('tplCardRow').content.cloneNode(true);
+    tpl.querySelector('.input-front').value=c.front;
+    tpl.querySelector('.input-back').value=c.back;
+    tpl.querySelector('.input-img').value=c.img||'';
+    tpl.querySelector('.btn-del-card').onclick=()=>{cards.splice(cards.indexOf(c),1);saveCurrentSet();renderCards(cards);};
+    tpl.querySelectorAll('input').forEach(inp=>{
+      inp.oninput=()=>{c.front=tpl.querySelector('.input-front').value; c.back=tpl.querySelector('.input-back').value; c.img=tpl.querySelector('.input-img').value; saveCurrentSet();}
+    });
+    list.appendChild(tpl);
   });
-  save();
 }
+
+function saveCurrentSet(){
+  if(!currentSetId){
+    const newSet={id:uid(),title:$('#setTitle').value,subject:$('#setSubject').value,image:$('#setImageURL').value,cards:[]};
+    sets.push(newSet); currentSetId=newSet.id;
+  } else {
+    const s=sets.find(x=>x.id===currentSetId);
+    s.title=$('#setTitle').value; s.subject=$('#setSubject').value; s.image=$('#setImageURL').value;
+  }
+  save(); renderSets();
+}
+
+// --- Ajouter carte ---
+$('#btnAddCard').onclick=()=>{
+  const s=sets.find(x=>x.id===currentSetId);
+  s.cards.push({front:'',back:'',img:''}); saveCurrentSet(); renderCards(s.cards);
+};
+
+// --- Navigation ---
+$('#btnNewSet').onclick=()=>editSet();
+$('#btnBackHome1').onclick=()=>{$('#viewEditor').classList.add('hidden');$('#viewHome').classList.remove('hidden');renderSets();}
+$('#btnBackHome2').onclick=()=>{$('#viewStudy').classList.add('hidden');$('#viewHome').classList.remove('hidden');renderSets();}
 
 // --- Étude ---
 function startStudy(id){
-  currentSetId=id;
-  const s=sets.find(x=>x.id===id);
-  $('#studySetTitle').textContent=s.title;
-  $('#studySetSubject').textContent=s.subject;
-  study.i=0;
-  study.order=s.cards.map((_,i)=>i);
-  study.wrong=[];
-  study.score=0;
-  showCard();
-  $('#viewHome').classList.add('hidden');
-  $('#viewEditor').classList.add('hidden');
-  $('#viewStudy').classList.remove('hidden');
+  const s=sets.find(x=>x.id===id); 
+  currentSetId=id; study.i=0; study.order=s.cards.map((_,i)=>i); study.wrong=[]; study.score=0;
+  $('#studySetTitle').textContent=s.title; $('#studySetSubject').textContent=s.subject;
+  $('#viewHome').classList.add('hidden'); $('#viewStudy').classList.remove('hidden');
+  $('#endControls').style.display='none';
+  renderStudyCard();
 }
 
-function showCard(){
+function renderStudyCard(){
+  const s=sets.find(x=>x.id===currentSetId); if(!s.cards.length)return;
+  const c=s.cards[study.order[study.i]]; if(!c)return;
+  const img=$('#cardImg'); img.src=c.img||''; img.style.background=c.img?'':'white';
+  $('#frontText').textContent=c.front;
+  $('#backText').textContent=c.back;
+  $('#card').classList.remove('flipped');
+  $('#progressChip').textContent=`${study.i+1}/${s.cards.length}`;
+}
+
+$('#card').onclick=()=>{$('#card').classList.toggle('flipped');};
+
+$('#btnBien').onclick=()=>{nextCard(true)};
+$('#btnMal').onclick=()=>{nextCard(false)};
+
+function nextCard(correct){
+  const s=sets.find(x=>x.id===currentSetId); 
+  if(!s.cards.length) return;
+  if(!correct) study.wrong.push(study.order[study.i]);
+  study.i++;
+  if(study.i>=study.order.length){
+    // FIN DU SET
+    $('#rewardMsg').textContent=`Set terminé ! Score: ${s.cards.length - study.wrong.length}/${s.cards.length}`;
+    $('#endControls').style.display='block';
+    return;
+  }
+  renderStudyCard();
+}
+
+// --- Boutons fin de set ---
+$('#btnRetryWrong').onclick=()=>{
   const s=sets.find(x=>x.id===currentSetId);
-  if(!s.cards.length){$('#frontText').textContent='Aucune carte';$('#backText').textContent='';$('#cardImg').src='';return;}
-  if(study.i>=s.cards.length){$('#frontText').textContent='Fin du set';$('#backText').textContent='';$('#cardImg').src='';return;}
-  const c=s.cards[study.order[study.i]];
-  $('#frontText').textContent=c.front||'';
-  $('#backText').textContent=c.back||'';
-  $('#cardImg').src=c.image||''; $('#cardImg').style.backgroundColor=c.image?'transparent':'white';
-  const card=$('#card'); card.classList.remove('flipped');
-}
+  if(!study.wrong.length)return;
+  study.order=study.wrong.slice();
+  study.i=0;
+  study.wrong=[];
+  $('#endControls').style.display='none';
+  renderStudyCard();
+};
+$('#btnRetryAll').onclick=()=>{
+  const s=sets.find(x=>x.id===currentSetId);
+  study.order=s.cards.map((_,i)=>i);
+  study.i=0;
+  study.wrong=[];
+  $('#endControls').style.display='none';
+  renderStudyCard();
+};
+$('#btnHomeEnd').onclick=()=>{
+  $('#viewStudy').classList.add('hidden');$('#viewHome').classList.remove('hidden');renderSets();
+};
 
-// --- Rotation ---
-$('#card').onclick=function(){this.classList.toggle('flipped');};
-
-// --- Bien/Mal ---
-$('#btnBien').onclick=()=>{study.i++;showCard();};
-$('#btnMal').onclick=()=>{study.wrong.push(study.order[study.i]);study.i++;showCard();};
-
-// --- Events ---
-$('#btnNewSet').onclick=()=>openEditor();
-$('#btnAddCard').onclick=()=>addCardRow();
-$('#btnBackHome1').onclick=renderHome;
-$('#btnBackHome2').onclick=renderHome;
-$('#setTitle').oninput=$('#setSubject').oninput=$('#setImageURL').oninput=()=>{let s=sets.find(x=>x.id===currentSetId);s.title=$('#setTitle').value;s.subject=$('#setSubject').value;s.image=$('#setImageURL').value;save();renderHome();};
-
-load();
-renderHome();
+// --- Init ---
+load(); renderSets();
 </script>
 </body>
 </html>
