@@ -1,80 +1,76 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mini-Quizlet ++</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Quizlet ++</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#6366f1,#ec4899,#f59e0b);color:white;min-height:100vh}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#6366f1,#ec4899,#10b981);color:white;min-height:100vh;}
 .btn{padding:.7rem 1rem;border-radius:9999px;font-weight:700}
 .btn-primary{background:linear-gradient(90deg,#6366f1,#ec4899);color:white}
 .btn-secondary{background:white;color:#4f46e5;border:2px solid #4f46e5}
 .chip{background:#dbeafe;color:#1e3a8a;padding:.25rem .6rem;border-radius:9999px;font-size:.8rem;font-weight:700}
 .input{width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid #e5e7eb;background:white;color:black}
-.set-card{background:white;color:black;border-radius:20px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.set-card{background:white;color:black;border-radius:20px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);position:relative}
 .mini-thumb{width:48px;height:48px;border-radius:12px;object-fit:cover;background:#eef}
-/* Card full screen */
-.stage{perspective:1200px;height:80vh;display:flex;justify-content:center;align-items:center}
-.card{width:90vw;height:80vh;border-radius:28px;background:white;color:black;position:relative;transform-style:preserve-3d;transition:transform .6s, box-shadow .2s;box-shadow:0 12px 32px rgba(0,0,0,.25);user-select:none;touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden}
-.card-face{position:absolute;inset:0;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden}
-.card-front{transform:rotateY(0)}
-.card-back{transform:rotateY(180deg)}
-.flipped{transform:rotateY(180deg)}
-.answer{font-size:1.2rem;font-weight:700;color:white;text-shadow:0 0 6px rgba(0,0,0,.7)}
-.card-text{font-size:1.2rem;font-weight:700;color:white;text-shadow:0 0 6px rgba(0,0,0,.7)}
-.card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1}
-.btn-swipe{position:absolute;top:50%;transform:translateY(-50%);font-size:2.5rem;z-index:10;opacity:0.8}
-.btn-left{left:10px}
-.btn-right{right:10px}
+/* Carte étude */
+.stage{perspective:1200px;margin-top:20px;position:relative}
+.card{width:100%;height:400px;border-radius:28px;background:white;color:black;position:relative;transform-style:preserve-3d;transition:transform .6s;display:flex;align-items:center;justify-content:center;font-size:1.5rem;text-align:center;overflow:hidden}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;}
+.card-front{transform:rotateY(0deg);background:white;color:black;}
+.card-back{transform:rotateY(180deg);background:white;color:black;}
+.flipped{transform:rotateY(180deg);}
+.card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
+.card .text{position:relative;z-index:2;background:rgba(255,255,255,0.7);padding:10px;border-radius:10px;}
+#btnMal{position:absolute;left:10px;bottom:50%;transform:translateY(50%);font-size:3rem;}
+#btnBien{position:absolute;right:10px;bottom:50%;transform:translateY(50%);font-size:3rem;}
 </style>
 </head>
 <body class="pb-20">
 <header class="max-w-4xl mx-auto px-4 pt-5 flex items-center justify-between">
 <div class="flex items-center gap-3">
-<div class="w-11 h-11 rounded-2xl bg-white text-indigo-600 grid place-items-center font-extrabold">MQ+</div>
-<div>
-<h1 class="text-2xl font-extrabold drop-shadow">Mini-Quizlet ++</h1>
-<p class="text-indigo-100 text-sm -mt-1">Étudier en s’amusant ✨</p>
-</div>
+  <div class="w-11 h-11 rounded-2xl bg-white text-indigo-600 grid place-items-center font-extrabold">MQ+</div>
+  <div>
+    <h1 class="text-2xl font-extrabold drop-shadow">Mini-Quizlet ++</h1>
+    <p class="text-indigo-100 text-sm -mt-1">Étudier en s’amusant ✨</p>
+  </div>
 </div>
 <div class="flex items-center gap-2">
-<button id="btnTheme" class="btn btn-secondary">🎨 Thème</button>
-<button id="btnNewSet" class="btn btn-primary">+ Nouveau set</button>
+  <button id="btnTheme" class="btn btn-secondary">🎨 Thème</button>
+  <button id="btnNewSet" class="btn btn-primary">+ Nouveau set</button>
 </div>
 </header>
 
 <main class="max-w-4xl mx-auto px-4 pt-4">
-<!-- HOME: liste des sets -->
+<!-- HOME -->
 <section id="viewHome" class="space-y-4">
-<div id="setsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-<p id="emptyMsg" class="text-center text-white/90 hidden">Aucun set. Crée ton premier ✨</p>
+  <div id="setsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+  <p id="emptyMsg" class="text-center text-white/90 hidden">Aucun set. Crée ton premier ✨</p>
 </section>
 
 <!-- EDITOR -->
 <section id="viewEditor" class="hidden">
 <div class="flex items-center justify-between mb-3">
-<button class="btn btn-secondary" id="btnBackHome1">← Accueil</button>
-<div class="flex items-center gap-2">
-<button class="btn btn-secondary" id="btnExport">Exporter</button>
-<label class="btn btn-secondary" for="importInput">Importer</label>
-<input id="importInput" type="file" accept="application/json" class="hidden" />
-<button class="btn btn-primary" id="btnStudyFromEditor">▶ Étudier</button>
-</div>
+  <button class="btn btn-secondary" id="btnBackHome1">← Accueil</button>
 </div>
 <div class="grid sm:grid-cols-2 gap-3 mb-3">
-<div>
-<label class="text-sm font-bold">Titre du set</label>
-<input id="setTitle" class="input" placeholder="Ex: Vocabulaire anglais">
+  <div>
+    <label class="text-sm font-bold">Titre du set</label>
+    <input id="setTitle" class="input" placeholder="Ex: Vocabulaire anglais">
+  </div>
+  <div>
+    <label class="text-sm font-bold">Matière</label>
+    <input id="setSubject" class="input" placeholder="Ex: Anglais">
+  </div>
 </div>
-<div>
-<label class="text-sm font-bold">Matière</label>
-<input id="setSubject" class="input" placeholder="Ex: Anglais">
-</div>
+<div class="mb-3">
+<label class="text-sm font-bold">Image du set (URL)</label>
+<input id="setImageURL" class="input" placeholder="https://...">
 </div>
 <div class="flex items-center justify-between mb-2">
-<h3 class="font-extrabold">Cartes</h3>
-<button id="btnAddCard" class="btn btn-primary">+ Ajouter</button>
+  <h3 class="font-extrabold">Cartes</h3>
+  <button id="btnAddCard" class="btn btn-primary">+ Ajouter</button>
 </div>
 <div id="cardsList" class="space-y-3"></div>
 <p id="noCardsMsg" class="hidden">Aucune carte.</p>
@@ -83,191 +79,175 @@ body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans
 <!-- STUDY -->
 <section id="viewStudy" class="hidden">
 <div class="flex items-center justify-between mb-2">
-<span id="studySetTitle" class="text-xl font-extrabold"></span>
-<span id="studySetSubject" class="text-sm text-indigo-100"></span>
+  <button class="btn btn-secondary" id="btnBackHome2">← Accueil</button>
+  <div class="flex items-center gap-2">
+    <span id="xpChip" class="chip">XP: 0</span>
+    <span id="streakChip" class="chip">🔥 0</span>
+    <span id="progressChip" class="chip">0/0</span>
+  </div>
 </div>
-<div class="stage mt-3">
-<div id="card" class="card">
-<img id="cardImg" class="card-img" />
-<div class="card-face card-front">
-<div id="frontText" class="card-text"></div>
+<div class="text-center mb-2">
+  <div id="studySetTitle" class="text-xl font-extrabold"></div>
+  <div id="studySetSubject" class="text-sm"></div>
 </div>
-<div class="card-face card-back">
-<div id="backText" class="card-text"></div>
+
+<div class="stage">
+  <div id="card" class="card">
+    <img id="cardImg" src="" alt="">
+    <div class="card-face card-front"><div class="text" id="frontText"></div></div>
+    <div class="card-face card-back"><div class="text" id="backText"></div></div>
+  </div>
+  <button id="btnMal">❌</button>
+  <button id="btnBien">✅</button>
 </div>
-<button class="btn-swipe btn-left">❌</button>
-<button class="btn-swipe btn-right">✅</button>
-</div>
-</div>
+
 <div class="text-center mt-4">
-<div id="rewardMsg" class="text-yellow-300 font-extrabold"></div>
-</div>
-<div class="mt-5 flex flex-wrap items-center justify-center gap-2 hidden" id="endBtns">
-<button id="btnAgainWrong" class="btn btn-secondary">Reprendre erreurs</button>
-<button id="btnRestartAll" class="btn btn-primary">Tout recommencer</button>
-<button id="btnBackHome2" class="btn btn-secondary">Accueil</button>
+  <div id="rewardMsg" class="text-yellow-300 font-extrabold"></div>
 </div>
 </section>
 </main>
 
+<!-- Templates -->
 <template id="tplSet">
 <div class="set-card p-4 flex items-center gap-3">
 <img class="mini-thumb"/>
 <div class="flex-1">
-<div class="font-extrabold text-black/90 set-title">Titre</div>
-<div class="text-sm text-slate-500 set-subject">Matière</div>
-<div class="text-xs text-slate-500 set-count">0 cartes</div>
+  <div class="font-extrabold text-black/90 set-title">Titre</div>
+  <div class="text-sm text-slate-500 set-subject">Matière</div>
 </div>
 <div class="flex flex-col gap-2">
-<button class="btn btn-primary btn-edit">Modifier</button>
-<button class="btn btn-primary btn-play">Jouer</button>
-<button class="btn btn-secondary btn-del">Supprimer</button>
+  <button class="btn btn-primary btn-edit">Modifier</button>
+  <button class="btn btn-primary btn-play">Jouer</button>
+  <button class="btn btn-secondary btn-del">Supprimer</button>
 </div>
 </div>
 </template>
 
 <template id="tplCardRow">
 <div class="set-card p-3">
-<div class="grid grid-cols-1 gap-2">
-<input class="input input-front" placeholder="Question">
-<input class="input input-back" placeholder="Réponse">
-<input class="input input-img" placeholder="URL de l'image">
-<div class="flex items-center gap-2">
-<button class="btn btn-secondary btn-del-card">🗑️ Carte</button>
-</div>
-</div>
+  <input class="input input-front" placeholder="Question">
+  <input class="input input-back" placeholder="Réponse">
+  <input class="input input-img" placeholder="Image URL">
+  <button class="btn btn-secondary btn-del-card">🗑️ Supprimer</button>
 </div>
 </template>
 
 <script>
-// --- Data & helpers ---
+// --- Données ---
 const LS_KEY='mq_plus_sets';
 let sets=[]; 
 let currentSetId=null;
-let study={order:[],i:0,wrong:[],score:0,finished:false,startTime:0,mode:'flash'};
+let study={i:0,order:[],wrong:[],score:0,mode:'flash'};
 
 const $=(s)=>document.querySelector(s);
 const $$=(s)=>document.querySelectorAll(s);
 const uid=()=>Math.random().toString(36).slice(2,9);
 const norm=(t)=>t?.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim()||'';
 
-function load(){try{sets=JSON.parse(localStorage.getItem(LS_KEY)||'[]');}catch{sets=[]}}
-function save(){localStorage.setItem(LS_KEY,JSON.stringify(sets))}
+function load(){try{sets=JSON.parse(localStorage.getItem(LS_KEY)||'[]');}catch{sets=[];}}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(sets));}
 
-// --- Home ---
+// --- Affichage Home ---
 function renderHome(){
-const grid=$('#setsGrid'); grid.innerHTML=''; 
-if(!sets.length){$('#emptyMsg').classList.remove('hidden');return;} else {$('#emptyMsg').classList.add('hidden')}
-sets.forEach(s=>{
-const tpl=document.querySelector('#tplSet').content.cloneNode(true);
-tpl.querySelector('.set-title').textContent=s.title||'Sans titre';
-tpl.querySelector('.set-subject').textContent=s.subject||'';
-tpl.querySelector('.set-count').textContent=`${s.cards.length} carte${s.cards.length>1?'s':''}`;
-const img=tpl.querySelector('.mini-thumb');
-img.src=s.img||'';
-tpl.querySelector('.btn-edit').onclick=()=>openEditor(s.id);
-tpl.querySelector('.btn-play').onclick=()=>startStudy(s.id);
-tpl.querySelector('.btn-del').onclick=()=>{if(confirm('Supprimer ce set?')){sets=sets.filter(x=>x.id!==s.id);save();renderHome();}};
-grid.appendChild(tpl);
-});
+  $('#setsGrid').innerHTML='';
+  if(!sets.length){$('#emptyMsg').classList.remove('hidden');} else {$('#emptyMsg').classList.add('hidden');}
+  sets.forEach(s=>{
+    const tpl=document.getElementById('tplSet').content.cloneNode(true);
+    tpl.querySelector('.set-title').textContent=s.title;
+    tpl.querySelector('.set-subject').textContent=s.subject;
+    const imgEl=tpl.querySelector('img');
+    imgEl.src=s.image||'';
+    tpl.querySelector('.btn-edit').onclick=()=>openEditor(s.id);
+    tpl.querySelector('.btn-play').onclick=()=>startStudy(s.id);
+    tpl.querySelector('.btn-del').onclick=()=>{sets=sets.filter(x=>x.id!==s.id);save();renderHome();};
+    $('#setsGrid').appendChild(tpl);
+  });
+  $('#viewHome').classList.remove('hidden');
+  $('#viewEditor').classList.add('hidden');
+  $('#viewStudy').classList.add('hidden');
 }
 
 // --- Editor ---
 function openEditor(id){
-currentSetId=id;
-const s=sets.find(x=>x.id===id); 
-$('#setTitle').value=s.title||''; $('#setSubject').value=s.subject||''; 
-$('#cardsList').innerHTML='';
-if(!s.cards.length){$('#noCardsMsg').classList.remove('hidden');} else {$('#noCardsMsg').classList.add('hidden')}
-s.cards.forEach(c=>addCardRow(c))
-$('#viewHome').classList.add('hidden'); $('#viewEditor').classList.remove('hidden');
+  currentSetId=id||uid();
+  let s=sets.find(x=>x.id===currentSetId);
+  if(!s){s={id:currentSetId,title:'',subject:'',image:'',cards:[]};sets.push(s);}
+  $('#setTitle').value=s.title;
+  $('#setSubject').value=s.subject;
+  $('#setImageURL').value=s.image;
+  const cl=$('#cardsList'); cl.innerHTML='';
+  if(!s.cards.length)$('#noCardsMsg').classList.remove('hidden'); else $('#noCardsMsg').classList.add('hidden');
+  s.cards.forEach(c=>{addCardRow(c)});
+  $('#viewHome').classList.add('hidden');
+  $('#viewEditor').classList.remove('hidden');
+  $('#viewStudy').classList.add('hidden');
+  save();
 }
-
 function addCardRow(c){
-const tpl=document.querySelector('#tplCardRow').content.cloneNode(true);
-tpl.querySelector('.input-front').value=c?.question||'';
-tpl.querySelector('.input-back').value=c?.answer||'';
-tpl.querySelector('.input-img').value=c?.img||'';
-tpl.querySelector('.btn-del-card').onclick=e=>{
-e.target.closest('.set-card').remove(); saveCardsFromEditor();
-};
-$('#cardsList').appendChild(tpl);
+  const tpl=document.getElementById('tplCardRow').content.cloneNode(true);
+  const front=tpl.querySelector('.input-front');
+  const back=tpl.querySelector('.input-back');
+  const img=tpl.querySelector('.input-img');
+  if(c){front.value=c.front;back.value=c.back;img.value=c.image||'';}
+  tpl.querySelector('.btn-del-card').onclick=e=>{
+    e.target.closest('.set-card').remove();
+    updateSetCards();
+  };
+  front.oninput=back.oninput=img.oninput=updateSetCards;
+  $('#cardsList').appendChild(tpl);
+}
+function updateSetCards(){
+  let s=sets.find(x=>x.id===currentSetId);
+  s.cards=[];
+  $$('#cardsList .set-card').forEach(r=>{
+    s.cards.push({front:r.querySelector('.input-front').value,back:r.querySelector('.input-back').value,image:r.querySelector('.input-img').value});
+  });
+  save();
 }
 
-function saveCardsFromEditor(){
-if(!currentSetId)return;
-const s=sets.find(x=>x.id===currentSetId);
-s.title=$('#setTitle').value; s.subject=$('#setSubject').value;
-s.cards=[];
-$('#cardsList .set-card').forEach(row=>{
-const q=row.querySelector('.input-front').value;
-const a=row.querySelector('.input-back').value;
-const img=row.querySelector('.input-img').value;
-s.cards.push({question:q,answer:a,img:img});
-});
-save();
-renderHome();
-}
-
-// --- Study ---
+// --- Étude ---
 function startStudy(id){
-currentSetId=id;
-const s=sets.find(x=>x.id===id);
-$('#studySetTitle').textContent=s.title||'Sans titre';
-$('#studySetSubject').textContent=s.subject||'';
-study.order=s.cards.map((_,i)=>i); study.i=0; study.wrong=[]; study.score=0; study.finished=false; study.startTime=Date.now();
-$('#endBtns').classList.add('hidden'); 
-showCard();
-$('#viewHome').classList.add('hidden'); $('#viewEditor').classList.add('hidden'); $('#viewStudy').classList.remove('hidden');
+  currentSetId=id;
+  const s=sets.find(x=>x.id===id);
+  $('#studySetTitle').textContent=s.title;
+  $('#studySetSubject').textContent=s.subject;
+  study.i=0;
+  study.order=s.cards.map((_,i)=>i);
+  study.wrong=[];
+  study.score=0;
+  showCard();
+  $('#viewHome').classList.add('hidden');
+  $('#viewEditor').classList.add('hidden');
+  $('#viewStudy').classList.remove('hidden');
 }
 
 function showCard(){
-const s=sets.find(x=>x.id===currentSetId);
-if(study.i>=s.cards.length){endStudy(); return;}
-const c=s.cards[study.order[study.i]];
-$('#card').classList.remove('flipped');
-$('#frontText').textContent=c.question||'';
-$('#backText').textContent=c.answer||'';
-$('#cardImg').src=c.img||''; 
+  const s=sets.find(x=>x.id===currentSetId);
+  if(!s.cards.length){$('#frontText').textContent='Aucune carte';$('#backText').textContent='';$('#cardImg').src='';return;}
+  if(study.i>=s.cards.length){$('#frontText').textContent='Fin du set';$('#backText').textContent='';$('#cardImg').src='';return;}
+  const c=s.cards[study.order[study.i]];
+  $('#frontText').textContent=c.front||'';
+  $('#backText').textContent=c.back||'';
+  $('#cardImg').src=c.image||''; $('#cardImg').style.backgroundColor=c.image?'transparent':'white';
+  const card=$('#card'); card.classList.remove('flipped');
 }
 
-function flipCard(){ $('#card').classList.toggle('flipped'); }
+// --- Rotation ---
+$('#card').onclick=function(){this.classList.toggle('flipped');};
 
-function markCard(isGood){
-const s=sets.find(x=>x.id===currentSetId);
-if(isGood)study.score++; else study.wrong.push(study.order[study.i]);
-study.i++; showCard();
-if(study.i>=s.cards.length)endStudy();
-}
+// --- Bien/Mal ---
+$('#btnBien').onclick=()=>{study.i++;showCard();};
+$('#btnMal').onclick=()=>{study.wrong.push(study.order[study.i]);study.i++;showCard();};
 
-function endStudy(){
-$('#endBtns').classList.remove('hidden');
-$('#rewardMsg').textContent=`Score: ${study.score}/${study.order.length}`;
-}
+// --- Events ---
+$('#btnNewSet').onclick=()=>openEditor();
+$('#btnAddCard').onclick=()=>addCardRow();
+$('#btnBackHome1').onclick=renderHome;
+$('#btnBackHome2').onclick=renderHome;
+$('#setTitle').oninput=$('#setSubject').oninput=$('#setImageURL').oninput=()=>{let s=sets.find(x=>x.id===currentSetId);s.title=$('#setTitle').value;s.subject=$('#setSubject').value;s.image=$('#setImageURL').value;save();renderHome();};
 
-// --- Event listeners ---
-$('#btnNewSet').onclick=()=>{
-const newSet={id:uid(),title:'Nouveau set',subject:'',img:'',cards:[]};
-sets.push(newSet); save(); renderHome(); openEditor(newSet.id);
-};
-
-$('#btnAddCard').onclick=()=>addCardRow({question:'',answer:'',img:''});
-$('#btnBackHome1').onclick=()=>{$('#viewEditor').classList.add('hidden'); $('#viewHome').classList.remove('hidden');};
-$('#btnBackHome2').onclick=()=>{$('#viewStudy').classList.add('hidden'); $('#viewHome').classList.remove('hidden');};
-$('#btnAgainWrong').onclick=()=>{
-study.order=study.wrong.slice(); study.i=0; study.wrong=[]; study.score=0; showCard(); $('#endBtns').classList.add('hidden');
-};
-$('#btnRestartAll').onclick=()=>{
-study.order=sets.find(x=>x.id===currentSetId).cards.map((_,i)=>i); study.i=0; study.wrong=[]; study.score=0; showCard(); $('#endBtns').classList.add('hidden');
-};
-
-// Flip card on tap
-$('#card').onclick=flipCard;
-// Buttons bien/mal
-$('.btn-left').onclick=()=>markCard(false);
-$('.btn-right').onclick=()=>markCard(true);
-
-load(); renderHome();
+load();
+renderHome();
 </script>
 </body>
 </html>
