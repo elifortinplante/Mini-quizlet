@@ -36,6 +36,7 @@
       margin: 10px 0;
       cursor: pointer;
       transition: 0.3s;
+      justify-content: space-between;
     }
     .set:hover { background: #e8e8e8; }
     .set img {
@@ -190,12 +191,12 @@
       document.getElementById("cards-editor").innerHTML = "";
     }
 
-    function addCardEditor() {
+    function addCardEditor(q='', a='', img='') {
       const div = document.createElement("div");
       div.innerHTML = `
-        <input type="text" placeholder="Question"><br>
-        <input type="text" placeholder="Réponse"><br>
-        <input type="text" placeholder="URL image"><br><br>
+        <input type="text" placeholder="Question" value="${q}"><br>
+        <input type="text" placeholder="Réponse" value="${a}"><br>
+        <input type="text" placeholder="URL image" value="${img}"><br><br>
       `;
       document.getElementById("cards-editor").appendChild(div);
     }
@@ -208,12 +209,22 @@
       const inputs = document.querySelectorAll("#cards-editor div");
       inputs.forEach(div => {
         const q = div.children[0].value;
-        const a = div.children[2].value;
-        const img = div.children[4].value;
-        if (q && a) cards.push({ question: q, answer: a, image: img });
+        const a = div.children[1].value;
+        const img = div.children[2].value;
+        if(q && a) cards.push({ question: q, answer: a, image: img });
       });
-      sets.push({ title, subject, image, cards });
+
+      if(currentSet){
+        currentSet.title = title;
+        currentSet.subject = subject;
+        currentSet.image = image;
+        currentSet.cards = cards;
+      } else {
+        sets.push({ title, subject, image, cards });
+      }
+
       saveSets();
+      currentSet = null;
       goHome();
     }
 
@@ -224,12 +235,36 @@
         const div = document.createElement("div");
         div.className = "set";
         div.innerHTML = `
-          <img src="${s.image || 'https://via.placeholder.com/60'}">
-          <div><strong>${s.title}</strong><br><small>${s.subject}</small></div>
+          <div style="display:flex; align-items:center; flex:1; cursor:pointer;">
+            <img src="${s.image || 'https://via.placeholder.com/60'}">
+            <div><strong>${s.title}</strong><br><small>${s.subject}</small></div>
+          </div>
+          <div style="display:flex; gap:5px;">
+            <button onclick="editSet(${i}); event.stopPropagation()">✏️ Modifier</button>
+            <button onclick="deleteSet(${i}); event.stopPropagation()">🗑️ Supprimer</button>
+          </div>
         `;
-        div.onclick = () => startGame(i);
+        div.querySelector("div:first-child").onclick = () => startGame(i);
         list.appendChild(div);
       });
+    }
+
+    function editSet(i){
+      currentSet = sets[i];
+      showSetEditor();
+      document.getElementById("set-title").value = currentSet.title;
+      document.getElementById("set-subject").value = currentSet.subject;
+      document.getElementById("set-image").value = currentSet.image;
+      document.getElementById("cards-editor").innerHTML = "";
+      currentSet.cards.forEach(c => addCardEditor(c.question, c.answer, c.image));
+    }
+
+    function deleteSet(i){
+      if(confirm("Êtes-vous sûr de vouloir supprimer ce set ?")){
+        sets.splice(i,1);
+        saveSets();
+        displaySets();
+      }
     }
 
     function startGame(i) {
@@ -256,24 +291,21 @@
       document.querySelector(".card").classList.toggle("flipped");
     }
 
-    function markAnswer(correct) {
-      if (!correct) errors.push(currentCards[currentIndex]);
+    function markAnswer(correct){
+      if(!correct) errors.push(currentCards[currentIndex]);
       currentIndex++;
-      if (currentIndex < currentCards.length) {
-        showCard();
-      } else {
-        endGame();
-      }
+      if(currentIndex < currentCards.length) showCard();
+      else endGame();
     }
 
-    function endGame() {
+    function endGame(){
       document.querySelectorAll(".container > div").forEach(div => div.classList.add("hidden"));
       document.getElementById("score-screen").classList.remove("hidden");
       document.getElementById("final-score").textContent =
         `Score: ${currentCards.length - errors.length}/${currentCards.length}`;
     }
 
-    function restartAll() {
+    function restartAll(){
       currentCards = [...currentSet.cards];
       currentIndex = 0;
       errors = [];
@@ -282,11 +314,8 @@
       showCard();
     }
 
-    function restartErrors() {
-      if (errors.length === 0) {
-        alert("Aucune erreur à rejouer !");
-        return;
-      }
+    function restartErrors(){
+      if(errors.length===0){ alert("Aucune erreur à rejouer !"); return; }
       currentCards = [...errors];
       currentIndex = 0;
       errors = [];
