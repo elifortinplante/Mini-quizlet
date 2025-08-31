@@ -3,130 +3,86 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mini-Quizlet ++</title>
+<title>Mini Quizlet Final</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-body {margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#6366f1,#ec4899,#f59e0b);color:white;min-height:100vh;}
-.btn {padding:.7rem 1rem;border-radius:9999px;font-weight:700;}
-.btn-primary{background:linear-gradient(90deg,#6366f1,#ec4899);color:white;}
-.btn-secondary{background:white;color:#4f46e5;border:2px solid #4f46e5;}
-.input{width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid #e5e7eb;background:white;color:black;}
-.set-card{background:white;color:black;border-radius:20px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);}
-.stage{perspective:1200px;display:flex;justify-content:center;}
-.card{width:320px;max-width:90vw;height:220px;border-radius:28px;background:white;color:black;position:relative;transform-style:preserve-3d;transition:transform .6s, box-shadow .2s;box-shadow:0 12px 32px rgba(0,0,0,.25);user-select:none;touch-action:none;display:flex;align-items:center;justify-content:center;}
-.card-face{position:absolute;inset:0;padding:18px 16px 16px 16px;display:flex;gap:10px;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;text-align:center;}
-.card-front{transform:rotateY(0);}
-.card-back{transform:rotateY(180deg);}
-.flipped{transform:rotateY(180deg);}
-.card img{width:100%;height:100%;object-fit:contain;border-radius:28px;}
+  body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#6366f1,#ec4899,#f59e0b);color:white;min-height:100vh}
+  .btn{padding:.7rem 1rem;border-radius:9999px;font-weight:700}
+  .btn-primary{background:linear-gradient(90deg,#6366f1,#ec4899);color:white}
+  .btn-secondary{background:white;color:#4f46e5;border:2px solid #4f46e5}
+  .input{width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid #e5e7eb;background:white;color:black}
+  .set-card{background:white;color:black;border-radius:20px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+  .stage{perspective:1200px}
+  .card{width:320px;max-width:90vw;height:220px;border-radius:28px;background:white;color:black;position:relative;transform-style:preserve-3d;transition:transform .6s, box-shadow .2s;box-shadow:0 12px 32px rgba(0,0,0,.25);user-select:none;touch-action:none;margin-inline:auto;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;}
+  .card-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;}
+  .card-front{transform:rotateY(0);}
+  .card-back{transform:rotateY(180deg);}
+  .flipped{transform:rotateY(180deg);}
+  .card img{max-width:100%;max-height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:0;border-radius:28px;}
+  .card-text{position:relative;z-index:1;font-size:1.1rem;font-weight:700;padding:5px;text-align:center;}
 </style>
 </head>
 <body>
 <header class="max-w-4xl mx-auto px-4 pt-5 flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-11 h-11 rounded-2xl bg-white text-indigo-600 grid place-items-center font-extrabold">MQ+</div>
-<div>
-<h1 class="text-2xl font-extrabold drop-shadow">Mini-Quizlet ++</h1>
-<p class="text-indigo-100 text-sm -mt-1">Étudier en s’amusant ✨</p>
-</div>
-</div>
-<div class="flex items-center gap-2">
-<button id="btnNewSet" class="btn btn-primary">+ Nouveau set</button>
-</div>
+  <div class="flex items-center gap-3">
+    <div class="w-11 h-11 rounded-2xl bg-white text-indigo-600 grid place-items-center font-extrabold">MQ</div>
+    <div>
+      <h1 class="text-2xl font-extrabold drop-shadow">Mini Quizlet Final</h1>
+      <p class="text-indigo-100 text-sm -mt-1">Étudier en s’amusant ✨</p>
+    </div>
+  </div>
+  <button id="btnNewSet" class="btn btn-primary">+ Nouveau set</button>
 </header>
 <main class="max-w-4xl mx-auto px-4 pt-4">
 <section id="viewHome" class="space-y-4">
-<div id="setsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-<p id="emptyMsg" class="text-center text-white/90 hidden">Aucun set. Crée ton premier ✨</p>
-</section>
-<section id="viewEditor" class="hidden">
-<div class="flex items-center justify-between mb-3">
-<button class="btn btn-secondary" id="btnBackHome">← Accueil</button>
-<button class="btn btn-primary" id="btnStudyFromEditor">▶ Étudier</button>
-</div>
-<div class="grid sm:grid-cols-2 gap-3 mb-3">
-<div><label class="text-sm font-bold">Titre du set</label><input id="setTitle" class="input" placeholder="Ex: Vocabulaire anglais"></div>
-<div><label class="text-sm font-bold">Matière</label><input id="setSubject" class="input" placeholder="Ex: Anglais"></div>
-</div>
-<div class="flex items-center justify-between mb-2">
-<h3 class="font-extrabold">Cartes</h3>
-<button id="btnAddCard" class="btn btn-primary">+ Ajouter</button>
-</div>
-<div id="cardsList" class="space-y-3"></div>
+  <div id="setsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
 </section>
 <section id="viewStudy" class="hidden">
-<div class="flex items-center justify-between mb-2">
-<button class="btn btn-secondary" id="btnBackHome2">← Accueil</button>
-<div><span id="progressChip" class="btn btn-secondary">0/0</span></div>
-</div>
-<div class="text-center mt-3">
-<div id="studySetTitle" class="text-xl font-extrabold"></div>
-</div>
-<div class="stage mt-3">
-<div id="card" class="card"></div>
-</div>
-<div class="mt-5 flex flex-wrap items-center justify-center gap-2">
-<button id="btnAgainWrong" class="btn btn-secondary">Reprendre erreurs</button>
-<button id="btnRestartAll" class="btn btn-primary">Tout recommencer</button>
-</div>
+  <div class="flex items-center justify-between mb-2">
+    <button id="btnBackHome" class="btn btn-secondary">← Accueil</button>
+    <div>
+      <span id="setTitleDisplay" class="font-bold"></span> - <span id="setSubjectDisplay"></span>
+    </div>
+  </div>
+  <div class="stage mt-3">
+    <div id="card" class="card">
+      <img id="cardImg" src="" alt="">
+      <div class="card-face card-front"><div id="frontText" class="card-text"></div></div>
+      <div class="card-face card-back"><div id="backText" class="card-text"></div></div>
+    </div>
+  </div>
+  <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+    <button id="btnAgainWrong" class="btn btn-secondary">Reprendre erreurs</button>
+    <button id="btnRestartAll" class="btn btn-primary">Tout recommencer</button>
+  </div>
 </section>
 </main>
-<template id="tplSet">
-<div class="set-card p-4 flex items-center gap-3">
-<div class="flex-1">
-<div class="font-extrabold text-black/90 set-title">Titre</div>
-<div class="text-sm text-slate-500 set-subject">Matière</div>
-</div>
-<div class="flex flex-col gap-2">
-<button class="btn btn-primary btn-edit">Modifier</button>
-<button class="btn btn-primary btn-play">Jouer</button>
-<button class="btn btn-secondary btn-del">Supprimer</button>
-</div>
-</div>
-</template>
-<template id="tplCardRow">
-<div class="set-card p-3">
-<input class="input input-front" placeholder="Question">
-<input class="input input-back" placeholder="Réponse">
-<input class="input input-img" placeholder="URL image">
-<button class="btn btn-secondary btn-del-card">Supprimer</button>
-</div>
-</template>
 <script>
-const LS_KEY='mq_plus_sets';
-let sets=[];
-let currentSetId=null;
-let study={order:[],i:0,wrong:[],finished:false};
-const $=(s)=>document.querySelector(s);
-const uid=()=>Math.random().toString(36).slice(2,9);
+const LS_KEY='mq_final_sets';
+let sets=[],currentSetId=null,study={order:[],i:0,wrong:[],finished:false};
+const cardEl=$('#card'),frontText=$('#frontText'),backText=$('#backText'),cardImg=$('#cardImg');
+function $(s){return document.querySelector(s);}
+function uid(){return Math.random().toString(36).slice(2,9);}
 function load(){try{sets=JSON.parse(localStorage.getItem(LS_KEY)||'[]');}catch{sets=[];}}
 function save(){localStorage.setItem(LS_KEY,JSON.stringify(sets));}
 function findSet(id){return sets.find(s=>s.id===id)}
-function upsertSet(s){const i=sets.findIndex(x=>x.id===s.id); if(i>-1) sets[i]=s; else sets.push(s); save();}
-function showHome(){$('#viewHome').classList.remove('hidden');$('#viewEditor').classList.add('hidden');$('#viewStudy').classList.add('hidden'); renderHome();}
-function showEditor(){$('#viewHome').classList.add('hidden');$('#viewEditor').classList.remove('hidden');$('#viewStudy').classList.add('hidden'); renderEditor();}
-function showStudy(){$('#viewHome').classList.add('hidden');$('#viewEditor').classList.add('hidden');$('#viewStudy').classList.remove('hidden');}
-function renderHome(){const grid=$('#setsGrid');grid.innerHTML=''; if(!sets.length){$('#emptyMsg').classList.remove('hidden');return;}$('#emptyMsg').classList.add('hidden'); const tpl=$('#tplSet'); sets.forEach(s=>{const el=tpl.content.cloneNode(true); el.querySelector('.set-title').textContent=s.title; el.querySelector('.set-subject').textContent=s.subject; el.querySelector('.btn-edit').onclick=()=>{currentSetId=s.id;showEditor();}; el.querySelector('.btn-play').onclick=()=>{currentSetId=s.id; startStudy(false);}; el.querySelector('.btn-del').onclick=()=>{sets=sets.filter(x=>x.id!==s.id); save(); renderHome();}; grid.appendChild(el);});}
-$('#btnNewSet').onclick=()=>{const s={id:uid(),title:'Nouveau set',subject:'',cards:[]}; upsertSet(s); currentSetId=s.id; showEditor();};
-const setTitle=$('#setTitle'), setSubject=$('#setSubject'), cardsList=$('#cardsList');
-function renderEditor(){const s=findSet(currentSetId); setTitle.value=s.title; setSubject.value=s.subject; cardsList.innerHTML=''; const tpl=$('#tplCardRow'); s.cards.forEach(c=>{const row=tpl.content.cloneNode(true); const f=row.querySelector('.input-front'); const b=row.querySelector('.input-back'); const img=row.querySelector('.input-img'); const del=row.querySelector('.btn-del-card'); f.value=c.front; b.value=c.back; img.value=c.img||''; f.oninput=()=>{c.front=f.value; save();}; b.oninput=()=>{c.back=b.value; save();}; img.oninput=()=>{c.img=img.value; save();}; del.onclick=()=>{s.cards=s.cards.filter(x=>x.id!==c.id); save(); renderEditor();}; cardsList.appendChild(row);});}
-$('#btnAddCard').onclick=()=>{const s=findSet(currentSetId); s.cards.push({id:uid(),front:'',back:'',img:''}); save(); renderEditor();};
-$('#btnBackHome').onclick=showHome;
-$('#btnStudyFromEditor').onclick=()=>{const s=findSet(currentSetId); s.title=setTitle.value; s.subject=setSubject.value; save(); startStudy(false);};
-const cardEl=$('#card');
-function startStudy(restartWrong){const s=findSet(currentSetId); if(!s.cards.length){alert('Ajoute des cartes'); return;} study.order=restartWrong?study.wrong.slice():s.cards.map(c=>c.id); study.i=0; study.wrong=[]; study.finished=false; updateStudyCard(); showStudy();}
+function renderHome(){const grid=$('#setsGrid');grid.innerHTML='';sets.forEach(s=>{const div=document.createElement('div');div.className='set-card p-4 flex items-center justify-between';
+div.innerHTML=`<div><div class='font-bold'>${s.title}</div><div class='text-sm'>${s.subject}</div></div><button class='btn btn-primary'>Jouer</button>`;
+div.querySelector('button').onclick=()=>{currentSetId=s.id;startStudy(false);};grid.appendChild(div);});}
+$('#btnNewSet').onclick=()=>{const s={id:uid(),title:'Nouveau set',subject:'Matière',cards:[{front:'Question 1',back:'Réponse 1',img:''}]};sets.push(s);save();renderHome();};
+$('#btnBackHome').onclick=()=>{$('#viewStudy').classList.add('hidden');$('#viewHome').classList.remove('hidden');};
+function startStudy(restartWrong){const s=findSet(currentSetId);if(!s||!s.cards.length)return;study.order=restartWrong?study.wrong.slice():s.cards.map(c=>c.id);study.i=0;study.wrong=[];study.finished=false;$('#viewHome').classList.add('hidden');$('#viewStudy').classList.remove('hidden');$('#setTitleDisplay').textContent=s.title;$('#setSubjectDisplay').textContent=s.subject;updateCard();}
 function currentCard(){return findSet(currentSetId).cards.find(c=>c.id===study.order[study.i]);}
-function updateStudyCard(){const c=currentCard(); if(!c){study.finished=true; return;} cardEl.innerHTML=''; const img=document.createElement('img'); img.src=c.img||''; const text=document.createElement('div'); text.textContent=c.front; text.style.position='absolute'; text.style.color='black'; text.style.fontWeight='700'; text.style.fontSize='1.2rem'; cardEl.appendChild(img); cardEl.appendChild(text); $('#progressChip').textContent=`${study.i+1}/${study.order.length}`;}
+function updateCard(){const s=findSet(currentSetId);const c=currentCard();if(!c){study.finished=true;return;}frontText.textContent=c.front;backText.textContent=c.back;cardImg.src=c.img||'';}
 cardEl.addEventListener('click',()=>{cardEl.classList.toggle('flipped');});
-let startX=0, dragging=false;
-cardEl.addEventListener('touchstart',e=>{dragging=true; startX=e.touches[0].clientX;});
-cardEl.addEventListener('touchmove',e=>{if(!dragging) return; const dx=e.touches[0].clientX-startX; cardEl.style.transform=`translateX(${dx}px)`;});
-cardEl.addEventListener('touchend',e=>{if(!dragging) return; dragging=false; const dx=e.changedTouches[0].clientX-startX; if(dx>50){markCard(true);} else if(dx<-50){markCard(false);} cardEl.style.transform='';});
-function markCard(ok){const c=currentCard(); if(!c) return; if(ok){} else {study.wrong.push(c.id);} study.i++; updateStudyCard();}
-$('#btnAgainWrong').onclick=()=>{if(!study.wrong.length)return; startStudy(true);};
+// Swipe
+let startX=0,dragging=false;
+cardEl.addEventListener('touchstart',e=>{dragging=true;startX=e.touches[0].clientX;});
+cardEl.addEventListener('touchmove',e=>{if(!dragging)return;const dx=e.touches[0].clientX-startX;cardEl.style.transform=`translateX(${dx}px)`;});
+cardEl.addEventListener('touchend',e=>{if(!dragging)return;dragging=false;const dx=e.changedTouches[0].clientX-startX;const TH=50;const s=findSet(currentSetId);const c=currentCard();if(dx>TH){study.i++;updateCard();}else if(dx<-TH){study.wrong.push(c.id);study.i++;updateCard();}cardEl.style.transform='';});
 $('#btnRestartAll').onclick=()=>startStudy(false);
-$('#btnBackHome2').onclick=showHome;
-load(); renderHome();
+$('#btnAgainWrong').onclick=()=>{if(!study.wrong.length)return;startStudy(true);};
+load();renderHome();
 </script>
 </body>
 </html>
