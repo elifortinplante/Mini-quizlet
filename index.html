@@ -50,7 +50,7 @@
       display: flex; flex-direction: column;
       justify-content: center; align-items: center;
       padding: 20px; box-sizing: border-box;
-      font-size: 22px; font-weight: bold; text-align: center; color: #333;
+      font-weight: bold; text-align: center; color: #333;
     }
     .card-front { background: #fff; }
     .card-back { background: #f0f0f0; transform: rotateY(180deg); }
@@ -228,7 +228,6 @@
       }
     }
 
-    // Partage via lien Base64
     function exportSet(i){
       const set = sets[i];
       const jsonStr = JSON.stringify(set);
@@ -237,7 +236,6 @@
       prompt("Voici le lien pour partager ton set : ", shareUrl);
     }
 
-    // Import JSON classique
     function importSet(event){
       const file = event.target.files[0]; if(!file) return;
       const reader = new FileReader();
@@ -251,7 +249,6 @@
       reader.readAsText(file);
     }
 
-    // Import depuis URL Base64
     function importSetFromUrl(){
       const params = new URLSearchParams(window.location.search);
       if(params.has('set')){
@@ -273,12 +270,44 @@
       showCard();
     }
 
-    function showCard(){
+    // === FONCTION SHOWCARD FINALE ===
+    function showCard() {
       const card = currentCards[currentIndex];
+      const frontImg = document.getElementById("card-image-front");
+      const backImg = document.getElementById("card-image-back");
+      const frontFace = document.querySelector(".card-front");
+      const backFace = document.querySelector(".card-back");
+
+      // Texte
       document.getElementById("card-question").textContent = card.question;
       document.getElementById("card-answer").textContent = card.answer;
-      document.getElementById("card-image-front").src = card.image || "";
-      document.getElementById("card-image-back").src = card.image || "";
+
+      // Image
+      if (card.image) {
+        frontImg.src = card.image;
+        frontImg.style.display = "block";
+        backImg.src = card.image;
+        backImg.style.display = "block";
+      } else {
+        frontImg.style.display = "none";
+        backImg.style.display = "none";
+      }
+
+      // Ajustement automatique du texte selon l'espace disponible
+      function adjustFontSize(face) {
+        let fontSize = 28; // taille maximale
+        const minFontSize = 12;
+        face.style.fontSize = fontSize + "px";
+
+        while (face.scrollHeight > face.clientHeight && fontSize > minFontSize) {
+          fontSize--;
+          face.style.fontSize = fontSize + "px";
+        }
+      }
+
+      adjustFontSize(frontFace);
+      adjustFontSize(backFace);
+
       document.querySelector(".card").classList.remove("flipped");
     }
 
@@ -297,7 +326,6 @@
       document.querySelectorAll(".container > div").forEach(div=>div.classList.add("hidden"));
       document.getElementById("game-screen").classList.remove("hidden"); showCard(); }
 
-    // Import depuis URL si présent
     importSetFromUrl();
     goHome();
   </script>
