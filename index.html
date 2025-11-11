@@ -84,6 +84,7 @@
       <h1>Mes Sets</h1>
       <button onclick="showSetEditor()">➕ Nouveau set</button>
       <button onclick="document.getElementById('import-file').click()">📥 Importer un set</button>
+      <button onclick="exportAllSets()">💾 Exporter tous les sets</button>
       <input type="file" id="import-file" class="hidden" onchange="importSet(event)">
       <div id="sets-list"></div>
     </div>
@@ -233,8 +234,33 @@
       const jsonStr = JSON.stringify(set);
       const base64 = btoa(jsonStr);
       const shareUrl = `${window.location.href.split('?')[0]}?set=${base64}`;
-      // utilisation de window.prompt pour copier le lien
       window.prompt("Voici le lien pour partager ton set :", shareUrl);
+    }
+
+    // ✅ Nouvelle fonction d’exportation de tous les sets
+    function exportAllSets() {
+      if (sets.length === 0) {
+        alert("Aucun set à exporter !");
+        return;
+      }
+
+      if (!confirm("Voulez-vous vraiment exporter tous vos sets dans un fichier ?")) {
+        return;
+      }
+
+      const jsonStr = JSON.stringify(sets, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "mes_sets_flashcards.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      alert("✅ Fichier téléchargé avec succès !");
     }
 
     function importSet(event){
