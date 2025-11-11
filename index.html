@@ -157,7 +157,7 @@
         document.getElementById("set-subject").value = currentSet.subject;
         document.getElementById("set-image").value = currentSet.image;
         currentSet.cards.forEach(c => addCardEditor(c.question, c.answer, c.image));
-      } else { currentSet = null; }
+      } else { currentSet = { title:"", subject:"", image:"", cards: [] }; addCardEditor(); }
     }
 
     function addCardEditor(q='', a='', img='') {
@@ -171,25 +171,26 @@
         <hr>`;
       document.getElementById("cards-editor").appendChild(div);
 
-      // Supprimer carte
       div.querySelector(".btn-del-card").onclick = () => div.remove();
 
-      // Gestion Entrée pour passer rapidement aux champs suivants et créer la carte
       const questionInput = div.querySelector(".question");
       const answerInput = div.querySelector(".answer");
       const imageInput = div.querySelector(".image");
 
-      questionInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") { e.preventDefault(); answerInput.focus(); }
-      });
-      answerInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") { e.preventDefault(); imageInput.focus(); }
-      });
+      questionInput.addEventListener("keydown", (e) => { if(e.key==="Enter"){ e.preventDefault(); answerInput.focus(); }});
+      answerInput.addEventListener("keydown", (e) => { if(e.key==="Enter"){ e.preventDefault(); imageInput.focus(); }});
       imageInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") { 
+        if(e.key==="Enter"){
           e.preventDefault();
+          // Ajouter la carte
           addCardFromEditor(div);
-          questionInput.focus();
+          // Supprimer l'ancien div
+          div.remove();
+          // Créer le prochain div vide
+          addCardEditor();
+          // Focus sur la nouvelle question
+          const lastDiv = document.querySelector("#cards-editor .card-editor:last-child");
+          lastDiv.querySelector(".question").focus();
         }
       });
     }
@@ -199,14 +200,7 @@
       const a = div.querySelector(".answer").value;
       const img = div.querySelector(".image").value;
       if(q && a){
-        // Ajouter la carte au set temporairement
-        const card = { question: q, answer: a, image: img };
-        if(!currentSet) currentSet = { title:"", subject:"", image:"", cards: [] };
-        currentSet.cards.push(card);
-        // Réinitialiser les champs
-        div.querySelector(".question").value = "";
-        div.querySelector(".answer").value = "";
-        div.querySelector(".image").value = "";
+        currentSet.cards.push({ question: q, answer: a, image: img });
       }
     }
 
@@ -215,14 +209,12 @@
       const subject = document.getElementById("set-subject").value;
       const image = document.getElementById("set-image").value;
 
-      if(currentSet){
-        currentSet.title = title; 
-        currentSet.subject = subject;
-        currentSet.image = image; 
-        if(!sets.includes(currentSet)) sets.push(currentSet);
-      } else {
-        sets.push({ title, subject, image, cards: [] });
-      }
+      currentSet.title = title; 
+      currentSet.subject = subject;
+      currentSet.image = image;
+
+      if(!sets.includes(currentSet)) sets.push(currentSet);
+
       saveSets(); currentSet = null; goHome();
     }
 
