@@ -157,7 +157,16 @@
         document.getElementById("set-subject").value = currentSet.subject;
         document.getElementById("set-image").value = currentSet.image;
         currentSet.cards.forEach(c => addCardEditor(c.question, c.answer, c.image));
-      } else { currentSet = { title:"", subject:"", image:"", cards: [] }; addCardEditor(); }
+      } else { 
+        currentSet = { title:"", subject:"", image:"", cards: [] }; 
+        addCardEditor(); 
+      }
+
+      // Focus automatique sur la première question
+      setTimeout(() => {
+        const firstInput = document.querySelector("#cards-editor .card-editor .question");
+        if(firstInput) firstInput.focus();
+      }, 50);
     }
 
     function addCardEditor(q='', a='', img='') {
@@ -171,37 +180,36 @@
         <hr>`;
       document.getElementById("cards-editor").appendChild(div);
 
-      div.querySelector(".btn-del-card").onclick = () => div.remove();
-
       const questionInput = div.querySelector(".question");
       const answerInput = div.querySelector(".answer");
       const imageInput = div.querySelector(".image");
+      const delBtn = div.querySelector(".btn-del-card");
+
+      delBtn.onclick = () => {
+        div.remove();
+        // Supprimer aussi du tableau si déjà enregistré
+        const index = currentSet.cards.findIndex(c => c.question===questionInput.value && c.answer===answerInput.value && c.image===imageInput.value);
+        if(index>=0) currentSet.cards.splice(index,1);
+      }
 
       questionInput.addEventListener("keydown", (e) => { if(e.key==="Enter"){ e.preventDefault(); answerInput.focus(); }});
       answerInput.addEventListener("keydown", (e) => { if(e.key==="Enter"){ e.preventDefault(); imageInput.focus(); }});
       imageInput.addEventListener("keydown", (e) => {
         if(e.key==="Enter"){
           e.preventDefault();
-          // Ajouter la carte
-          addCardFromEditor(div);
-          // Supprimer l'ancien div
-          div.remove();
-          // Créer le prochain div vide
-          addCardEditor();
-          // Focus sur la nouvelle question
-          const lastDiv = document.querySelector("#cards-editor .card-editor:last-child");
-          lastDiv.querySelector(".question").focus();
+          const qVal = questionInput.value.trim();
+          const aVal = answerInput.value.trim();
+          const imgVal = imageInput.value.trim();
+          if(qVal && aVal){
+            currentSet.cards.push({ question: qVal, answer: aVal, image: imgVal });
+            // Réinitialiser les champs pour la prochaine carte
+            questionInput.value = "";
+            answerInput.value = "";
+            imageInput.value = "";
+            questionInput.focus();
+          }
         }
       });
-    }
-
-    function addCardFromEditor(div){
-      const q = div.querySelector(".question").value;
-      const a = div.querySelector(".answer").value;
-      const img = div.querySelector(".image").value;
-      if(q && a){
-        currentSet.cards.push({ question: q, answer: a, image: img });
-      }
     }
 
     function saveSet() {
