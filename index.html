@@ -229,15 +229,43 @@
       }
     }
 
-    function exportSet(i){
+    // 🆕 Nouvelle version de exportSet avec menu iPhone (Fichiers, AirDrop, etc.)
+    async function exportSet(i) {
       const set = sets[i];
-      const jsonStr = JSON.stringify(set);
-      const base64 = btoa(jsonStr);
-      const shareUrl = `${window.location.href.split('?')[0]}?set=${base64}`;
-      window.prompt("Voici le lien pour partager ton set :", shareUrl);
+      if (!set) return;
+
+      const jsonStr = JSON.stringify(set, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const file = new File([blob], `${set.title.replace(/[^a-z0-9]/gi, "_") || "set"}.json`, { type: "application/json" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: set.title,
+            text: "Voici mon set de flashcards !"
+          });
+          alert("✅ Set partagé ou enregistré avec succès !");
+          return;
+        } catch (err) {
+          console.log("Partage annulé ou erreur :", err);
+        }
+      }
+
+      // 🖥️ Téléchargement classique (PC)
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${set.title.replace(/[^a-z0-9]/gi, "_") || "set"}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      alert("✅ Fichier téléchargé avec succès !");
     }
 
-    // ✅ Nouvelle fonction d’exportation de tous les sets
+    // ✅ Export de tous les sets (inchangé)
     function exportAllSets() {
       if (sets.length === 0) {
         alert("Aucun set à exporter !");
