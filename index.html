@@ -157,72 +157,37 @@
         document.getElementById("set-subject").value = currentSet.subject;
         document.getElementById("set-image").value = currentSet.image;
         currentSet.cards.forEach(c => addCardEditor(c.question, c.answer, c.image));
-      } else { 
-        currentSet = { title:"", subject:"", image:"", cards: [] }; 
-        addCardEditor(); 
-      }
-
-      // Focus automatique sur la première question
-      setTimeout(() => {
-        const firstInput = document.querySelector("#cards-editor .card-editor .question");
-        if(firstInput) firstInput.focus();
-      }, 50);
+      } else { currentSet = null; }
     }
 
     function addCardEditor(q='', a='', img='') {
       const div = document.createElement("div");
       div.className = "card-editor";
       div.innerHTML = `
-        <input type="text" class="question" placeholder="Question" value="${q}">
-        <input type="text" class="answer" placeholder="Réponse" value="${a}">
-        <input type="text" class="image" placeholder="URL image" value="${img}">
+        <input type="text" placeholder="Question" value="${q}">
+        <input type="text" placeholder="Réponse" value="${a}">
+        <input type="text" placeholder="URL image" value="${img}">
         <button class="btn-del-card">🗑️ Supprimer cette carte</button>
         <hr>`;
       document.getElementById("cards-editor").appendChild(div);
-
-      const questionInput = div.querySelector(".question");
-      const answerInput = div.querySelector(".answer");
-      const imageInput = div.querySelector(".image");
-      const delBtn = div.querySelector(".btn-del-card");
-
-      delBtn.onclick = () => {
-        div.remove();
-        // Supprimer aussi du tableau si déjà enregistré
-        const index = currentSet.cards.findIndex(c => c.question===questionInput.value && c.answer===answerInput.value && c.image===imageInput.value);
-        if(index>=0) currentSet.cards.splice(index,1);
-      }
-
-      questionInput.addEventListener("keydown", (e) => { if(e.key==="Enter"){ e.preventDefault(); answerInput.focus(); }});
-      answerInput.addEventListener("keydown", (e) => { if(e.key==="Enter"){ e.preventDefault(); imageInput.focus(); }});
-      imageInput.addEventListener("keydown", (e) => {
-        if(e.key==="Enter"){
-          e.preventDefault();
-          const qVal = questionInput.value.trim();
-          const aVal = answerInput.value.trim();
-          const imgVal = imageInput.value.trim();
-          if(qVal && aVal){
-            currentSet.cards.push({ question: qVal, answer: aVal, image: imgVal });
-            // Réinitialiser les champs pour la prochaine carte
-            questionInput.value = "";
-            answerInput.value = "";
-            imageInput.value = "";
-            questionInput.focus();
-          }
-        }
-      });
+      div.querySelector(".btn-del-card").onclick = () => div.remove();
     }
 
     function saveSet() {
       const title = document.getElementById("set-title").value;
       const subject = document.getElementById("set-subject").value;
       const image = document.getElementById("set-image").value;
-
-      currentSet.title = title; 
-      currentSet.subject = subject;
-      currentSet.image = image;
-
-      if(!sets.includes(currentSet)) sets.push(currentSet);
-
+      const cards = [];
+      document.querySelectorAll("#cards-editor > .card-editor").forEach(div => {
+        const q = div.children[0].value;
+        const a = div.children[1].value;
+        const img = div.children[2].value;
+        if(q && a) cards.push({ question: q, answer: a, image: img });
+      });
+      if(currentSet){
+        currentSet.title = title; currentSet.subject = subject;
+        currentSet.image = image; currentSet.cards = cards;
+      } else { sets.push({ title, subject, image, cards }); }
       saveSets(); currentSet = null; goHome();
     }
 
@@ -264,6 +229,7 @@
       }
     }
 
+    // 🆕 Nouvelle version de exportSet avec menu iPhone (Fichiers, AirDrop, etc.)
     async function exportSet(i) {
       const set = sets[i];
       if (!set) return;
@@ -286,6 +252,7 @@
         }
       }
 
+      // 🖥️ Téléchargement classique (PC)
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -298,9 +265,16 @@
       alert("✅ Fichier téléchargé avec succès !");
     }
 
+    // ✅ Export de tous les sets (inchangé)
     function exportAllSets() {
-      if (sets.length === 0) { alert("Aucun set à exporter !"); return; }
-      if (!confirm("Voulez-vous vraiment exporter tous vos sets dans un fichier ?")) return;
+      if (sets.length === 0) {
+        alert("Aucun set à exporter !");
+        return;
+      }
+
+      if (!confirm("Voulez-vous vraiment exporter tous vos sets dans un fichier ?")) {
+        return;
+      }
 
       const jsonStr = JSON.stringify(sets, null, 2);
       const blob = new Blob([jsonStr], { type: "application/json" });
