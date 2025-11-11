@@ -166,29 +166,62 @@
       div.innerHTML = `
         <input type="text" placeholder="Question" value="${q}">
         <input type="text" placeholder="Réponse" value="${a}">
-        <input type="text" placeholder="URL image" value="${img}">
+        <input type="text" placeholder="URL image ou Data URL" value="${img}">
         <button class="btn-del-card">🗑️ Supprimer cette carte</button>
         <hr>`;
       document.getElementById("cards-editor").appendChild(div);
-      div.querySelector(".btn-del-card").onclick = () => div.remove();
+
+      const questionInput = div.children[0];
+      const answerInput = div.children[1];
+      const imageInput = div.children[2];
+      const delBtn = div.children[3];
+
+      // Carte temporaire dans currentSet
+      if(!currentSet) currentSet = {title:'', subject:'', cards:[]};
+      let card = {question: q, answer: a, image: img};
+      currentSet.cards.push(card);
+
+      delBtn.onclick = () => {
+        const idx = currentSet.cards.indexOf(card);
+        if(idx >=0) currentSet.cards.splice(idx,1);
+        div.remove();
+      }
+
+      // Enter pour passer d'un champ à l'autre et créer nouvelle carte
+      questionInput.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); answerInput.focus(); }});
+      answerInput.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); imageInput.focus(); }});
+      imageInput.addEventListener('keydown', e => {
+        if(e.key==='Enter'){
+          e.preventDefault();
+          card.question = questionInput.value.trim();
+          card.answer = answerInput.value.trim();
+          card.image = imageInput.value.trim();
+          addCardEditor(); // nouvelle carte
+          setTimeout(()=>document.querySelector("#cards-editor .card-editor:last-child input").focus(),50);
+        }
+      });
+
+      // Mise à jour live si modifié
+      [questionInput, answerInput, imageInput].forEach(inp=>{
+        inp.addEventListener('input', ()=>{ card.question = questionInput.value; card.answer = answerInput.value; card.image = imageInput.value; });
+      });
     }
 
     function saveSet() {
       const title = document.getElementById("set-title").value;
       const subject = document.getElementById("set-subject").value;
       const image = document.getElementById("set-image").value;
-      const cards = [];
-      document.querySelectorAll("#cards-editor > .card-editor").forEach(div => {
-        const q = div.children[0].value;
-        const a = div.children[1].value;
-        const img = div.children[2].value;
-        if(q && a) cards.push({ question: q, answer: a, image: img });
-      });
       if(currentSet){
-        currentSet.title = title; currentSet.subject = subject;
-        currentSet.image = image; currentSet.cards = cards;
-      } else { sets.push({ title, subject, image, cards }); }
-      saveSets(); currentSet = null; goHome();
+        currentSet.title = title;
+        currentSet.subject = subject;
+        currentSet.image = image;
+        if(!sets.includes(currentSet)) sets.push(currentSet);
+      } else {
+        sets.push({title, subject, image, cards:[]});
+      }
+      saveSets();
+      currentSet = null;
+      goHome();
     }
 
     function displaySets() {
@@ -229,7 +262,6 @@
       }
     }
 
-    // 🆕 Nouvelle version de exportSet avec menu iPhone (Fichiers, AirDrop, etc.)
     async function exportSet(i) {
       const set = sets[i];
       if (!set) return;
@@ -252,7 +284,6 @@
         }
       }
 
-      // 🖥️ Téléchargement classique (PC)
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -261,25 +292,15 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-
       alert("✅ Fichier téléchargé avec succès !");
     }
 
-    // ✅ Export de tous les sets (inchangé)
     function exportAllSets() {
-      if (sets.length === 0) {
-        alert("Aucun set à exporter !");
-        return;
-      }
-
-      if (!confirm("Voulez-vous vraiment exporter tous vos sets dans un fichier ?")) {
-        return;
-      }
-
+      if (sets.length === 0) { alert("Aucun set à exporter !"); return; }
+      if (!confirm("Voulez-vous vraiment exporter tous vos sets dans un fichier ?")) return;
       const jsonStr = JSON.stringify(sets, null, 2);
       const blob = new Blob([jsonStr], { type: "application/json" });
       const url = URL.createObjectURL(blob);
-
       const a = document.createElement("a");
       a.href = url;
       a.download = "mes_sets_flashcards.json";
@@ -287,7 +308,6 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-
       alert("✅ Fichier téléchargé avec succès !");
     }
 
@@ -339,11 +359,14 @@
       document.getElementById("card-question").textContent = card.question;
       document.getElementById("card-answer").textContent = card.answer;
 
-      if(card.image){
-        frontImg.src = card.image; frontImg.style.display="block";
-        backImg.src = card.image; backImg.style.display="block";
+      if(card.image){ // ✅ HTTPS ou Data URL accepté
+        frontImg.src = card.image;
+        backImg.src = card.image;
+        frontImg.style.display = "block";
+        backImg.style.display = "block";
       } else {
-        frontImg.style.display="none"; backImg.style.display="none";
+        frontImg.style.display = "none";
+        backImg.style.display = "none";
       }
 
       function adjustFontSize(face){
@@ -358,7 +381,6 @@
 
       adjustFontSize(frontFace);
       adjustFontSize(backFace);
-
       document.querySelector(".card").classList.remove("flipped");
     }
 
