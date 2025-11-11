@@ -164,30 +164,65 @@
       const div = document.createElement("div");
       div.className = "card-editor";
       div.innerHTML = `
-        <input type="text" placeholder="Question" value="${q}">
-        <input type="text" placeholder="Réponse" value="${a}">
-        <input type="text" placeholder="URL image" value="${img}">
+        <input type="text" class="question" placeholder="Question" value="${q}">
+        <input type="text" class="answer" placeholder="Réponse" value="${a}">
+        <input type="text" class="image" placeholder="URL image" value="${img}">
         <button class="btn-del-card">🗑️ Supprimer cette carte</button>
         <hr>`;
       document.getElementById("cards-editor").appendChild(div);
+
+      // Supprimer carte
       div.querySelector(".btn-del-card").onclick = () => div.remove();
+
+      // Gestion Entrée pour passer rapidement aux champs suivants et créer la carte
+      const questionInput = div.querySelector(".question");
+      const answerInput = div.querySelector(".answer");
+      const imageInput = div.querySelector(".image");
+
+      questionInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); answerInput.focus(); }
+      });
+      answerInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); imageInput.focus(); }
+      });
+      imageInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { 
+          e.preventDefault();
+          addCardFromEditor(div);
+          questionInput.focus();
+        }
+      });
+    }
+
+    function addCardFromEditor(div){
+      const q = div.querySelector(".question").value;
+      const a = div.querySelector(".answer").value;
+      const img = div.querySelector(".image").value;
+      if(q && a){
+        // Ajouter la carte au set temporairement
+        const card = { question: q, answer: a, image: img };
+        if(!currentSet) currentSet = { title:"", subject:"", image:"", cards: [] };
+        currentSet.cards.push(card);
+        // Réinitialiser les champs
+        div.querySelector(".question").value = "";
+        div.querySelector(".answer").value = "";
+        div.querySelector(".image").value = "";
+      }
     }
 
     function saveSet() {
       const title = document.getElementById("set-title").value;
       const subject = document.getElementById("set-subject").value;
       const image = document.getElementById("set-image").value;
-      const cards = [];
-      document.querySelectorAll("#cards-editor > .card-editor").forEach(div => {
-        const q = div.children[0].value;
-        const a = div.children[1].value;
-        const img = div.children[2].value;
-        if(q && a) cards.push({ question: q, answer: a, image: img });
-      });
+
       if(currentSet){
-        currentSet.title = title; currentSet.subject = subject;
-        currentSet.image = image; currentSet.cards = cards;
-      } else { sets.push({ title, subject, image, cards }); }
+        currentSet.title = title; 
+        currentSet.subject = subject;
+        currentSet.image = image; 
+        if(!sets.includes(currentSet)) sets.push(currentSet);
+      } else {
+        sets.push({ title, subject, image, cards: [] });
+      }
       saveSets(); currentSet = null; goHome();
     }
 
@@ -229,7 +264,6 @@
       }
     }
 
-    // 🆕 Nouvelle version de exportSet avec menu iPhone (Fichiers, AirDrop, etc.)
     async function exportSet(i) {
       const set = sets[i];
       if (!set) return;
@@ -252,7 +286,6 @@
         }
       }
 
-      // 🖥️ Téléchargement classique (PC)
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -265,16 +298,9 @@
       alert("✅ Fichier téléchargé avec succès !");
     }
 
-    // ✅ Export de tous les sets (inchangé)
     function exportAllSets() {
-      if (sets.length === 0) {
-        alert("Aucun set à exporter !");
-        return;
-      }
-
-      if (!confirm("Voulez-vous vraiment exporter tous vos sets dans un fichier ?")) {
-        return;
-      }
+      if (sets.length === 0) { alert("Aucun set à exporter !"); return; }
+      if (!confirm("Voulez-vous vraiment exporter tous vos sets dans un fichier ?")) return;
 
       const jsonStr = JSON.stringify(sets, null, 2);
       const blob = new Blob([jsonStr], { type: "application/json" });
