@@ -384,6 +384,16 @@
       }
     });
 
+    // --- AJOUT CLAVIER PENDANT LE JEU ---
+    document.addEventListener("keydown", function(e){
+      const gameScreen = document.getElementById("game-screen");
+      if(!gameScreen.classList.contains("hidden")){
+        if(e.code === "Space"){ e.preventDefault(); flipCard(); }
+        if(e.key.toLowerCase() === "f"){ markAnswer(false); }
+        if(e.key.toLowerCase() === "j"){ markAnswer(true); }
+      }
+    });
+
     goHome();
   </script>
 </body>
