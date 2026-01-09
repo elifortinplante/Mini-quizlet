@@ -21,6 +21,7 @@
       border-radius: 20px;
       padding: 20px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      position: relative;
     }
     h1, h2 { text-align: center; color: #333; }
     .hidden { display: none; }
@@ -61,6 +62,7 @@
       margin-bottom: 15px;
       object-fit: contain;
     }
+    .card-label { pointer-events: none; }
     .answer-buttons { display: flex; justify-content: space-between; margin-top: 20px; }
     .answer-buttons button {
       flex: 1; margin: 0 5px; padding: 10px;
@@ -78,8 +80,9 @@
       background: #a18cd1; color: white; transition: 0.3s;
     }
     #score-screen button:hover { background: #875fb3; }
-    .card-editor { margin-bottom: 10px; }
+    .card-editor { margin-bottom: 10px; position: relative; }
     .card-editor input { display: block; width: 95%; margin-bottom: 5px; }
+    .card-editor button { margin-right: 5px; }
   </style>
 </head>
 <body>
@@ -175,34 +178,57 @@
         document.getElementById("set-title").value = currentSet.title;
         document.getElementById("set-subject").value = currentSet.subject;
         document.getElementById("set-image").value = currentSet.image;
-        currentSet.cards.forEach(c => addCardEditor(c.question, c.answer, c.image));
+        currentSet.cards.forEach(c => addCardEditor(c.question, c.answer, c.image, c.color, c.number));
       } else { currentSet = null; }
     }
 
-    function addCardEditor(q='', a='', img='') {
+    function addCardEditor(q='', a='', img='', color='', number='') {
       const div = document.createElement("div");
       div.className = "card-editor";
+      div.dataset.color = color || '';
+      div.dataset.number = number || '';
       div.innerHTML = `
         <input type="text" placeholder="Question" value="${q}">
         <input type="text" placeholder="Réponse" value="${a}">
         <input type="text" placeholder="URL image ou vide" value="${img}">
         <input type="file" accept="image/*" class="img-upload" style="display:none">
         <button class="btn-photo">📸 Galerie</button>
+        <button class="btn-color" style="font-size:0.9em">${number || "Couleur"}</button>
         <button class="btn-del-card">🗑️ Supprimer cette carte</button>
         <hr>`;
       document.getElementById("cards-editor").appendChild(div);
 
       const imgInput = div.querySelector(".img-upload");
       const urlInput = div.children[2];
-
       div.querySelector(".btn-photo").onclick = () => imgInput.click();
-
       imgInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const file = e.target.files[0]; if(!file) return;
         const reader = new FileReader();
-        reader.onload = (ev) => { urlInput.value = ev.target.result; };
+        reader.onload = ev => urlInput.value = ev.target.result;
         reader.readAsDataURL(file);
+      };
+
+      // --- Bouton couleur ---
+      const colorBtn = div.querySelector(".btn-color");
+      colorBtn.onclick = () => {
+        const inputColor = document.createElement("input");
+        inputColor.type = "color";
+        inputColor.style.position = "absolute";
+        inputColor.style.zIndex = "1000";
+        document.body.appendChild(inputColor);
+        inputColor.click();
+        inputColor.oninput = () => {
+          const c = inputColor.value;
+          const numStr = prompt("Entrez un chiffre pour cette couleur :");
+          const num = numStr ? parseInt(numStr) : '';
+          if(numStr && isNaN(num)) { alert("Chiffre invalide !"); document.body.removeChild(inputColor); return; }
+          div.dataset.color = c;
+          div.dataset.number = num;
+          colorBtn.textContent = num || '';
+          colorBtn.style.background = c;
+          colorBtn.style.color = "#fff";
+          document.body.removeChild(inputColor);
+        };
       };
 
       div.querySelector(".btn-del-card").onclick = () => div.remove();
@@ -217,7 +243,11 @@
         const q = div.children[0].value;
         const a = div.children[1].value;
         const img = div.children[2].value;
-        if(q && a) cards.push({ question: q, answer: a, image: img });
+        if(q && a) cards.push({
+          question: q, answer: a, image: img,
+          color: div.dataset.color || '',
+          number: div.dataset.number || ''
+        });
       });
       if(currentSet){
         currentSet.title = title; currentSet.subject = subject;
@@ -227,73 +257,56 @@
     }
 
     function displaySets() {
-      const list = document.getElementById("sets-list");
-      list.innerHTML = "";
+      const list = document.getElementById("sets-list"); list.innerHTML = "";
       sets.forEach((s,i)=>{
-        const div = document.createElement("div");
-        div.className = "set";
-        div.innerHTML = `<img src="${s.image || 'https://via.placeholder.com/60'}">
+        const div = document.createElement("div"); div.className="set";
+        div.innerHTML = `<img src="${s.image||'https://via.placeholder.com/60'}">
                          <div><strong>${s.title}</strong><br><small>${s.subject}</small></div>`;
         div.onclick = () => startGame(i);
 
         const buttonsDiv = document.createElement("div"); buttonsDiv.className="set-buttons";
 
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "✏️ Modifier";
+        const editBtn = document.createElement("button"); editBtn.textContent = "✏️ Modifier";
         editBtn.onclick = e => { e.stopPropagation(); showSetEditor(i); };
 
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "🗑️ Supprimer";
+        const delBtn = document.createElement("button"); delBtn.textContent = "🗑️ Supprimer";
         delBtn.onclick = e => { e.stopPropagation(); deleteSet(i); };
 
-        const shareBtn = document.createElement("button");
-        shareBtn.textContent = "📤 Partager";
+        const shareBtn = document.createElement("button"); shareBtn.textContent = "📤 Partager";
         shareBtn.onclick = async e => {
           e.stopPropagation();
           const jsonStr = JSON.stringify(sets[i], null, 2);
           const blob = new Blob([jsonStr], { type: "application/json" });
-          const file = new File([blob], `${sets[i].title.replace(/[^a-z0-9]/gi, "_") || "set"}.json`, { type: "application/json" });
-
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-              await navigator.share({ files: [file], title: sets[i].title, text: "Voici mon set de flashcards !" });
-              alert("✅ Set partagé ou enregistré avec succès !");
-              return;
-            } catch(err){ console.log("Partage annulé ou erreur :", err); }
+          const file = new File([blob], `${sets[i].title.replace(/[^a-z0-9]/gi, "_")||"set"}.json`, { type: "application/json" });
+          if(navigator.canShare && navigator.canShare({ files:[file] })){
+            try { await navigator.share({ files:[file], title: sets[i].title, text:"Voici mon set !" }); alert("✅ Set partagé !"); return; } catch(err){ console.log(err); }
           }
-
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `${sets[i].title.replace(/[^a-z0-9]/gi, "_") || "set"}.json`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          alert("✅ Fichier téléchargé avec succès !");
+          const url = URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url;
+          a.download=`${sets[i].title.replace(/[^a-z0-9]/gi,"_")||"set"}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); alert("✅ Fichier téléchargé !");
         };
 
-        buttonsDiv.appendChild(editBtn);
-        buttonsDiv.appendChild(delBtn);
-        buttonsDiv.appendChild(shareBtn);
-        div.appendChild(buttonsDiv);
-        list.appendChild(div);
+        buttonsDiv.appendChild(editBtn); buttonsDiv.appendChild(delBtn); buttonsDiv.appendChild(shareBtn);
+        div.appendChild(buttonsDiv); list.appendChild(div);
       });
     }
 
-    function deleteSet(i){
-      if(confirm("Supprimer ce set ?")){
-        sets.splice(i,1); saveSets(); displaySets();
-      }
-    }
+    function deleteSet(i){ if(confirm("Supprimer ce set ?")){ sets.splice(i,1); saveSets(); displaySets(); } }
 
     function startGame(i){
       currentSet = sets[i];
       currentCards = [...currentSet.cards];
-      for (let j = currentCards.length - 1; j > 0; j--) {
-        const k = Math.floor(Math.random() * (j + 1));
-        [currentCards[j], currentCards[k]] = [currentCards[k], currentCards[j]];
-      }
+
+      // --- Organiser par couleur et chiffre ---
+      let colorMap = {};
+      currentCards.forEach(c => {
+        const col = c.color || 'default';
+        if(!colorMap[col]) colorMap[col]=[];
+        colorMap[col].push(c);
+      });
+      for(let col in colorMap) colorMap[col].sort((a,b)=>(a.number||0)-(b.number||0));
+      let shuffledColors = Object.keys(colorMap).sort(()=>Math.random()-0.5);
+      currentCards=[]; shuffledColors.forEach(col=>currentCards.push(...colorMap[col]));
+
       currentIndex=0; errors=[];
       document.querySelectorAll(".container > div").forEach(div=>div.classList.add("hidden"));
       document.getElementById("game-screen").classList.remove("hidden");
@@ -301,7 +314,7 @@
       showCard();
     }
 
-    function showCard() {
+    function showCard(){
       const card = currentCards[currentIndex];
       const frontImg = document.getElementById("card-image-front");
       const backImg = document.getElementById("card-image-back");
@@ -311,86 +324,56 @@
       document.getElementById("card-question").textContent = card.question;
       document.getElementById("card-answer").textContent = card.answer;
 
-      if(card.image){
-        frontImg.src = card.image; frontImg.style.display="block";
-        backImg.src = card.image; backImg.style.display="block";
-      } else {
-        frontImg.style.display="none"; backImg.style.display="none";
+      if(card.image){ frontImg.src=card.image; frontImg.style.display="block"; backImg.src=card.image; backImg.style.display="block"; }
+      else{ frontImg.style.display="none"; backImg.style.display="none"; }
+
+      // --- Afficher chiffre + couleur ---
+      let labelDiv = frontFace.querySelector(".card-label");
+      if(!labelDiv){
+        labelDiv=document.createElement("div"); labelDiv.className="card-label";
+        labelDiv.style.position="absolute"; labelDiv.style.top="10px"; labelDiv.style.right="10px";
+        labelDiv.style.padding="4px 8px"; labelDiv.style.borderRadius="8px"; labelDiv.style.fontWeight="bold";
+        frontFace.appendChild(labelDiv); backFace.appendChild(labelDiv.cloneNode(true));
       }
+      if(card.color && card.number){ labelDiv.textContent=card.number; labelDiv.style.background=card.color; labelDiv.style.color="#fff"; }
+      else{ labelDiv.textContent=''; labelDiv.style.background="transparent"; }
 
       function adjustFontSize(face){
-        let fontSize = 36;
-        const minFontSize = 12;
-        face.style.fontSize = fontSize+"px";
-        while(face.scrollHeight > face.clientHeight && fontSize > minFontSize){
-          fontSize--;
-          face.style.fontSize = fontSize+"px";
-        }
+        let fontSize = 36; const minFontSize=12; face.style.fontSize=fontSize+"px";
+        while(face.scrollHeight>face.clientHeight && fontSize>minFontSize){ fontSize--; face.style.fontSize=fontSize+"px"; }
       }
-      adjustFontSize(frontFace);
-      adjustFontSize(backFace);
-
+      adjustFontSize(frontFace); adjustFontSize(backFace);
       document.querySelector(".card").classList.remove("flipped");
     }
 
     function flipCard(){ document.querySelector(".card").classList.toggle("flipped"); }
-    function markAnswer(correct){ if(!correct) errors.push(currentCards[currentIndex]); currentIndex++;
-      if(currentIndex < currentCards.length) showCard(); else endGame(); }
-    function endGame(){ document.querySelectorAll(".container > div").forEach(div=>div.classList.add("hidden"));
-      document.getElementById("score-screen").classList.remove("hidden");
-      document.getElementById("final-score").textContent=`Score: ${currentCards.length-errors.length}/${currentCards.length}`;
-    }
-    function restartAll(){ currentCards=[...currentSet.cards]; currentIndex=0; errors=[];
-      document.querySelectorAll(".container > div").forEach(div=>div.classList.add("hidden"));
-      document.getElementById("game-screen").classList.remove("hidden"); showCard(); }
-    function restartErrors(){ if(errors.length===0){ alert("Aucune erreur à rejouer !"); return; }
-      currentCards=[...errors]; currentIndex=0; errors=[];
-      document.querySelectorAll(".container > div").forEach(div=>div.classList.add("hidden"));
-      document.getElementById("game-screen").classList.remove("hidden"); showCard(); }
+    function markAnswer(correct){ if(!correct) errors.push(currentCards[currentIndex]); currentIndex++; if(currentIndex<currentCards.length) showCard(); else endGame(); }
+    function endGame(){ document.querySelectorAll(".container > div").forEach(div=>div.classList.add("hidden")); document.getElementById("score-screen").classList.remove("hidden"); document.getElementById("final-score").textContent=`Score: ${currentCards.length-errors.length}/${currentCards.length}`; }
+    function restartAll(){ currentCards=[...currentSet.cards]; currentIndex=0; errors=[]; document.querySelectorAll(".container > div").forEach(div=>div.classList.add("hidden")); document.getElementById("game-screen").classList.remove("hidden"); showCard(); }
+    function restartErrors(){ if(errors.length===0){ alert("Aucune erreur à rejouer !"); return; } currentCards=[...errors]; currentIndex=0; errors=[]; document.querySelectorAll(".container > div").forEach(div=>div.classList.add("hidden")); document.getElementById("game-screen").classList.remove("hidden"); showCard(); }
 
-    function importSet(event){
-      const file = event.target.files[0]; if(!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e){
-        try{
-          const importedSet = JSON.parse(e.target.result);
-          sets.push(importedSet); saveSets(); displaySets();
-          alert("Set importé avec succès !");
-        }catch(err){ alert("Erreur : fichier invalide !"); }
-      };
-      reader.readAsText(file);
-    }
+    function importSet(event){ const file=event.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=function(e){ try{ const importedSet=JSON.parse(e.target.result); sets.push(importedSet); saveSets(); displaySets(); alert("Set importé avec succès !"); }catch(err){ alert("Erreur : fichier invalide !"); } }; reader.readAsText(file); }
 
-    // --- NOUVEAU : Enter dans l'éditeur de cartes ---
     document.addEventListener("keydown", function(e) {
-      if(e.key === "Enter") {
-        const active = document.activeElement;
-        if(active && active.tagName === "INPUT" && active.closest(".card-editor")) {
-          const cardDiv = active.closest(".card-editor");
-          const cardsEditor = document.getElementById("cards-editor");
-          const inputs = Array.from(cardDiv.querySelectorAll("input[type=text]"));
-          const lastCard = cardsEditor.lastElementChild === cardDiv;
-          const index = inputs.indexOf(active);
-          if(index !== -1){
-            e.preventDefault();
-            if(index === 0) { inputs[1].focus(); }      // Question -> Réponse
-            else if(index === 1) { inputs[2].focus(); } // Réponse -> Image
-            else if(index === 2){
-              if(lastCard){ addCardEditor(); cardsEditor.lastElementChild.children[0].focus(); }
-              else { const nextCard = cardDiv.nextElementSibling; if(nextCard) nextCard.querySelector("input").focus(); }
-            }
-          }
+      if(e.key==="Enter"){
+        const active=document.activeElement;
+        if(active && active.tagName==="INPUT" && active.closest(".card-editor")){
+          const cardDiv=active.closest(".card-editor");
+          const cardsEditor=document.getElementById("cards-editor");
+          const inputs=Array.from(cardDiv.querySelectorAll("input[type=text]"));
+          const lastCard=cardsEditor.lastElementChild===cardDiv;
+          const index=inputs.indexOf(active);
+          if(index!==-1){ e.preventDefault(); if(index===0) inputs[1].focus(); else if(index===1) inputs[2].focus(); else if(index===2){ if(lastCard){ addCardEditor(); cardsEditor.lastElementChild.children[0].focus(); } else { const nextCard=cardDiv.nextElementSibling; if(nextCard) nextCard.querySelector("input").focus(); } } }
         }
       }
     });
 
-    // --- AJOUT CLAVIER PENDANT LE JEU ---
     document.addEventListener("keydown", function(e){
-      const gameScreen = document.getElementById("game-screen");
+      const gameScreen=document.getElementById("game-screen");
       if(!gameScreen.classList.contains("hidden")){
-        if(e.code === "Space"){ e.preventDefault(); flipCard(); }
-        if(e.key.toLowerCase() === "f"){ markAnswer(false); }
-        if(e.key.toLowerCase() === "j"){ markAnswer(true); }
+        if(e.code==="Space"){ e.preventDefault(); flipCard(); }
+        if(e.key.toLowerCase()==="f"){ markAnswer(false); }
+        if(e.key.toLowerCase()==="j"){ markAnswer(true); }
       }
     });
 
