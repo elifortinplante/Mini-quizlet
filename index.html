@@ -1,126 +1,177 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flashcards App</title>
-<style>
-body {
-  margin: 0; font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #a18cd1, #fbc2eb, #8fd3f4);
-  min-height: 100vh; display: flex; justify-content: center; align-items: center;
-}
-.container {
-  width: 90%; max-width: 800px;
-  background: white; border-radius: 20px; padding: 20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2); position: relative;
-}
-h1,h2 { text-align: center; color: #333; }
-.hidden { display: none; }
-.set { display: flex; align-items: center; background: #f3f3f3;
-       border-radius: 15px; padding: 10px; margin: 10px 0; cursor: pointer; transition:0.3s;}
-.set:hover { background:#e8e8e8; }
-.set img { width:60px;height:60px;border-radius:12px;object-fit:cover;margin-right:15px;}
-.set-buttons { margin-left:auto; display:flex; gap:5px; }
-.card-container { perspective:1000px; margin:20px 0; }
-.card { width:100%; height:350px; position:relative; transform-style: preserve-3d; transition:0.6s; cursor:pointer; }
-.card.flipped { transform: rotateY(180deg); }
-.card-face { position:absolute;width:100%;height:100%;backface-visibility:hidden;
-            border-radius:20px; display:flex; flex-direction:column; justify-content:center;
-            align-items:center;padding:20px; box-sizing:border-box; font-weight:bold;
-            text-align:center; color:#333; overflow:hidden; }
-.card-front { background:#fff; }
-.card-back { background:#f0f0f0; transform: rotateY(180deg); }
-.card-face img { width:100%; max-height:250px; margin-bottom:15px; object-fit:contain; }
-.card-label { pointer-events:none; }
-.answer-buttons { display:flex; justify-content:space-between; margin-top:20px; }
-.answer-buttons button { flex:1; margin:0 5px; padding:10px; font-size:18px; border:none; border-radius:12px; cursor:pointer; transition:0.3s;}
-.correct { background:#a0e7a0; } .incorrect { background:#f28b82; }
-.correct:hover { background:#77d677; } .incorrect:hover { background:#e06666; }
-#score-screen { text-align:center; }
-#score-screen button { margin:10px; padding:12px 20px; font-size:16px; border:none; border-radius:12px; cursor:pointer; background:#a18cd1; color:white; transition:0.3s;}
-#score-screen button:hover { background:#875fb3; }
-.card-editor { margin-bottom:10px; position:relative; }
-.card-editor input { display:block; width:95%; margin-bottom:5px; }
-.card-editor button { margin-right:5px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcards App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb, #8fd3f4);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    h1, h2 { text-align: center; color: #333; }
+    .hidden { display: none; }
+    .set {
+      display: flex;
+      align-items: center;
+      background: #f3f3f3;
+      border-radius: 15px;
+      padding: 10px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .set:hover { background: #e8e8e8; }
+    .set img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; margin-right: 15px; }
+    .set-buttons { margin-left: auto; display: flex; gap: 5px; }
+    .card-container { perspective: 1000px; margin: 20px 0; }
+    .card {
+      width: 100%; height: 350px;
+      position: relative; transform-style: preserve-3d;
+      transition: transform 0.6s; cursor: pointer;
+    }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute; width: 100%; height: 100%;
+      backface-visibility: hidden; border-radius: 20px;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 20px; box-sizing: border-box;
+      font-weight: bold; text-align: center; color: #333;
+      overflow: hidden;
+    }
+    .card-front { background: #fff; }
+    .card-back { background: #f0f0f0; transform: rotateY(180deg); }
+    .card-face img {
+      width: 100%;
+      max-height: 250px;
+      margin-bottom: 15px;
+      object-fit: contain;
+    }
+    .card-label { pointer-events: none; }
+    .answer-buttons { display: flex; justify-content: space-between; margin-top: 20px; }
+    .answer-buttons button {
+      flex: 1; margin: 0 5px; padding: 10px;
+      font-size: 18px; border: none; border-radius: 12px;
+      cursor: pointer; transition: 0.3s;
+    }
+    .correct { background: #a0e7a0; }
+    .incorrect { background: #f28b82; }
+    .correct:hover { background: #77d677; }
+    .incorrect:hover { background: #e06666; }
+    #score-screen { text-align: center; }
+    #score-screen button {
+      margin: 10px; padding: 12px 20px; font-size: 16px;
+      border: none; border-radius: 12px; cursor: pointer;
+      background: #a18cd1; color: white; transition: 0.3s;
+    }
+    #score-screen button:hover { background: #875fb3; }
+    .card-editor { margin-bottom: 10px; position: relative; }
+    .card-editor input { display: block; width: 95%; margin-bottom: 5px; }
+    .card-editor button { margin-right: 5px; }
+  </style>
 </head>
 <body>
-<div class="container">
+  <div class="container">
 
-<!-- Accueil -->
-<div id="home-screen">
-  <h1>Mes Sets</h1>
-  <button onclick="showSetEditor()">➕ Nouveau set</button>
-  <button onclick="document.getElementById('import-file').click()">📥 Importer un set</button>
-  <button onclick="exportAllSets()">💾 Exporter tous les sets</button>
-  <input type="file" id="import-file" class="hidden" onchange="importSet(event)">
-  <div id="sets-list"></div>
-</div>
+    <!-- Écran accueil -->
+    <div id="home-screen">
+      <h1>Mes Sets</h1>
+      <button onclick="showSetEditor()">➕ Nouveau set</button>
+      <button onclick="document.getElementById('import-file').click()">📥 Importer un set</button>
+      <button onclick="exportAllSets()">💾 Exporter tous les sets</button>
+      <input type="file" id="import-file" class="hidden" onchange="importSet(event)">
+      <div id="sets-list"></div>
+    </div>
 
-<!-- Éditeur -->
-<div id="editor-screen" class="hidden">
-  <h2>Créer / Modifier un Set</h2>
-  <input type="text" id="set-title" placeholder="Titre du set"><br><br>
-  <input type="text" id="set-subject" placeholder="Matière"><br><br>
-  <input type="text" id="set-image" placeholder="URL image pour l’accueil">
-  <input type="file" accept="image/*" id="set-image-file" style="display:none">
-  <button onclick="document.getElementById('set-image-file').click()">📸 Galerie couverture</button><br><br>
-  <div id="cards-editor"></div>
-  <button onclick="addCardEditor()">➕ Ajouter une carte</button><br><br>
-  <button onclick="saveSet()">💾 Sauvegarder</button>
-  <button onclick="goHome()">🏠 Accueil</button>
-</div>
+    <!-- Écran édition -->
+    <div id="editor-screen" class="hidden">
+      <h2>Créer / Modifier un Set</h2>
+      <input type="text" id="set-title" placeholder="Titre du set"><br><br>
+      <input type="text" id="set-subject" placeholder="Matière"><br><br>
 
-<!-- Jeu -->
-<div id="game-screen" class="hidden">
-  <h2 id="game-title"></h2>
-  <div class="card-container">
-    <div class="card" onclick="flipCard()">
-      <div class="card-face card-front">
-        <img id="card-image-front" alt="">
-        <div id="card-question"></div>
+      <input type="text" id="set-image" placeholder="URL image pour l’accueil">
+      <input type="file" accept="image/*" id="set-image-file" style="display:none">
+      <button onclick="document.getElementById('set-image-file').click()">📸 Galerie couverture</button><br><br>
+
+      <div id="cards-editor"></div>
+      <button onclick="addCardEditor()">➕ Ajouter une carte</button><br><br>
+      <button onclick="saveSet()">💾 Sauvegarder</button>
+      <button onclick="goHome()">🏠 Accueil</button>
+    </div>
+
+    <!-- Écran jeu -->
+    <div id="game-screen" class="hidden">
+      <h2 id="game-title"></h2>
+      <div class="card-container">
+        <div class="card" onclick="flipCard()">
+          <div class="card-face card-front">
+            <img id="card-image-front" alt="">
+            <div id="card-question"></div>
+          </div>
+          <div class="card-face card-back">
+            <img id="card-image-back" alt="">
+            <div id="card-answer"></div>
+          </div>
+        </div>
       </div>
-      <div class="card-face card-back">
-        <img id="card-image-back" alt="">
-        <div id="card-answer"></div>
+      <div class="answer-buttons">
+        <button class="incorrect" onclick="markAnswer(false)">Mauvais</button>
+        <button class="correct" onclick="markAnswer(true)">Bon</button>
       </div>
     </div>
-  </div>
-  <div class="answer-buttons">
-    <button class="incorrect" onclick="markAnswer(false)">Mauvais</button>
-    <button class="correct" onclick="markAnswer(true)">Bon</button>
-  </div>
-</div>
 
-<!-- Score -->
-<div id="score-screen" class="hidden">
-  <h2>Résultat</h2>
-  <p id="final-score"></p>
-  <button onclick="restartAll()">🔄 Recommencer tout</button>
-  <button onclick="restartErrors()">❌ Rejouer erreurs</button>
-  <button onclick="goHome()">🏠 Accueil</button>
-</div>
-
-</div>
+    <!-- Écran score -->
+    <div id="score-screen" class="hidden">
+      <h2>Résultat</h2>
+      <p id="final-score"></p>
+      <button onclick="restartAll()">🔄 Recommencer tout</button>
+      <button onclick="restartErrors()">❌ Rejouer erreurs</button>
+      <button onclick="goHome()">🏠 Accueil</button>
+    </div>
+  </div>
 
 <script>
-let sets = JSON.parse(localStorage.getItem("sets"))||[];
-let currentSet=null, currentCards=[], currentIndex=0, errors=[];
+let sets = JSON.parse(localStorage.getItem("sets")) || [];
+let currentSet = null;
+let currentCards = [];
+let currentIndex = 0;
+let errors = [];
 
-function saveSets(){ localStorage.setItem("sets",JSON.stringify(sets)); }
-function goHome(){ document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
-                  document.getElementById("home-screen").classList.remove("hidden"); displaySets(); }
+function saveSets() { localStorage.setItem("sets", JSON.stringify(sets)); }
+
+function goHome(){
+  document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
+  document.getElementById("home-screen").classList.remove("hidden");
+  displaySets();
+}
 
 function showSetEditor(setIndex=null){
   document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
   document.getElementById("editor-screen").classList.remove("hidden");
-  document.getElementById("cards-editor").innerHTML = "";
-  document.getElementById("set-image-file").onchange = e => {
-    const f=e.target.files[0]; if(!f) return; const r=new FileReader();
-    r.onload = ev=>document.getElementById("set-image").value = ev.target.result;
-    r.readAsDataURL(f);
+  document.getElementById("cards-editor").innerHTML="";
+
+  document.getElementById("set-image-file").onchange=(e)=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=(ev)=>{ document.getElementById("set-image").value=ev.target.result; };
+    reader.readAsDataURL(file);
   };
+
   if(setIndex!==null){
     currentSet=sets[setIndex];
     document.getElementById("set-title").value=currentSet.title;
@@ -132,7 +183,9 @@ function showSetEditor(setIndex=null){
 
 function addCardEditor(q='',a='',img='',color='',number=''){
   const div=document.createElement("div");
-  div.className="card-editor"; div.dataset.color=color||''; div.dataset.number=number||'';
+  div.className="card-editor";
+  div.dataset.color=color||'';
+  div.dataset.number=number||'';
   div.innerHTML=`
     <input type="text" placeholder="Question" value="${q}">
     <input type="text" placeholder="Réponse" value="${a}">
@@ -144,23 +197,35 @@ function addCardEditor(q='',a='',img='',color='',number=''){
     <hr>`;
   document.getElementById("cards-editor").appendChild(div);
 
-  const imgInput = div.querySelector(".img-upload");
-  const urlInput = div.children[2];
-  div.querySelector(".btn-photo").onclick = ()=>imgInput.click();
-  imgInput.onchange = e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader();
-                           r.onload=ev=>urlInput.value=ev.target.result; r.readAsDataURL(f); };
+  const imgInput=div.querySelector(".img-upload");
+  const urlInput=div.children[2];
+  div.querySelector(".btn-photo").onclick=()=>imgInput.click();
+  imgInput.onchange=(e)=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>urlInput.value=ev.target.result;
+    reader.readAsDataURL(file);
+  };
 
-  const colorBtn = div.querySelector(".btn-color");
-  colorBtn.onclick = ()=>{
+  // Bouton couleur
+  const colorBtn=div.querySelector(".btn-color");
+  colorBtn.onclick=()=>{
     const inputColor=document.createElement("input");
-    inputColor.type="color"; inputColor.style.position="absolute"; inputColor.style.zIndex="1000";
-    document.body.appendChild(inputColor); inputColor.click();
+    inputColor.type="color";
+    inputColor.style.position="absolute";
+    inputColor.style.zIndex="1000";
+    document.body.appendChild(inputColor);
+    inputColor.click();
     inputColor.oninput=()=>{
       const c=inputColor.value;
       const numStr=prompt("Entrez un chiffre pour cette couleur :");
       const num=numStr?parseInt(numStr):'';
-      if(numStr && isNaN(num)){ alert("Chiffre invalide !"); document.body.removeChild(inputColor); return; }
-      div.dataset.color=c; div.dataset.number=num; colorBtn.textContent=num||''; colorBtn.style.background=c; colorBtn.style.color="#fff";
+      if(numStr&&isNaN(num)){ alert("Chiffre invalide !"); document.body.removeChild(inputColor); return; }
+      div.dataset.color=c;
+      div.dataset.number=num;
+      colorBtn.textContent=num||'';
+      colorBtn.style.background=c;
+      colorBtn.style.color="#fff";
       document.body.removeChild(inputColor);
     };
   };
@@ -174,11 +239,15 @@ function saveSet(){
   const image=document.getElementById("set-image").value;
   const cards=[];
   document.querySelectorAll("#cards-editor > .card-editor").forEach(div=>{
-    const q=div.children[0].value, a=div.children[1].value, img=div.children[2].value;
-    if(q && a) cards.push({question:q, answer:a, image:img, color:div.dataset.color||'', number:div.dataset.number||''});
+    const q=div.children[0].value;
+    const a=div.children[1].value;
+    const img=div.children[2].value;
+    if(q&&a) cards.push({ question:q, answer:a, image:img, color:div.dataset.color||'', number:div.dataset.number||'' });
   });
-  if(currentSet){ currentSet.title=title; currentSet.subject=subject; currentSet.image=image; currentSet.cards=cards; }
-  else sets.push({title,subject,image,cards});
+  if(currentSet){
+    currentSet.title=title; currentSet.subject=subject;
+    currentSet.image=image; currentSet.cards=cards;
+  } else sets.push({ title, subject, image, cards });
   saveSets(); currentSet=null; goHome();
 }
 
@@ -188,15 +257,10 @@ function displaySets(){
     const div=document.createElement("div"); div.className="set";
     div.innerHTML=`<img src="${s.image||'https://via.placeholder.com/60'}"><div><strong>${s.title}</strong><br><small>${s.subject}</small></div>`;
     div.onclick=()=>startGame(i);
-
     const buttonsDiv=document.createElement("div"); buttonsDiv.className="set-buttons";
 
-    const editBtn=document.createElement("button"); editBtn.textContent="✏️ Modifier";
-    editBtn.onclick=e=>{ e.stopPropagation(); showSetEditor(i); };
-
-    const delBtn=document.createElement("button"); delBtn.textContent="🗑️ Supprimer";
-    delBtn.onclick=e=>{ e.stopPropagation(); deleteSet(i); };
-
+    const editBtn=document.createElement("button"); editBtn.textContent="✏️ Modifier"; editBtn.onclick=e=>{ e.stopPropagation(); showSetEditor(i); };
+    const delBtn=document.createElement("button"); delBtn.textContent="🗑️ Supprimer"; delBtn.onclick=e=>{ e.stopPropagation(); deleteSet(i); };
     const shareBtn=document.createElement("button"); shareBtn.textContent="📤 Partager";
     shareBtn.onclick=async e=>{
       e.stopPropagation();
@@ -204,10 +268,10 @@ function displaySets(){
       const blob=new Blob([jsonStr],{type:"application/json"});
       const file=new File([blob],`${sets[i].title.replace(/[^a-z0-9]/gi,"_")||"set"}.json`,{type:"application/json"});
       if(navigator.canShare && navigator.canShare({files:[file]})){
-        try{ await navigator.share({files:[file], title:sets[i].title, text:"Voici mon set !"}); alert("✅ Set partagé !"); return; } catch(err){ console.log(err); }
+        try{ await navigator.share({files:[file],title:sets[i].title,text:"Voici mon set !"}); alert("✅ Set partagé !"); return; }catch(err){console.log(err);}
       }
-      const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=`${sets[i].title.replace(/[^a-z0-9]/gi,"_")||"set"}.json`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); alert("✅ Fichier téléchargé !");
+      const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url;
+      a.download=`${sets[i].title.replace(/[^a-z0-9]/gi,"_")||"set"}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); alert("✅ Fichier téléchargé !");
     };
 
     buttonsDiv.appendChild(editBtn); buttonsDiv.appendChild(delBtn); buttonsDiv.appendChild(shareBtn);
@@ -218,14 +282,19 @@ function displaySets(){
 function deleteSet(i){ if(confirm("Supprimer ce set ?")){ sets.splice(i,1); saveSets(); displaySets(); } }
 
 function startGame(i){
-  currentSet=sets[i]; currentCards=[...currentSet.cards];
-  
-  // --- Organisation par couleur + chiffre (corrigé) ---
-  let colorMap={}, noColorCards=[];
-  currentCards.forEach(c=>{ if(c.color){ if(!colorMap[c.color]) colorMap[c.color]=[]; colorMap[c.color].push(c); } else noColorCards.push(c); });
+  currentSet=sets[i];
+  currentCards=[...currentSet.cards];
+
+  // Organiser par couleur + chiffre
+  const colorMap={};
+  currentCards.forEach(c=>{
+    const col=c.color||'none';
+    if(!colorMap[col]) colorMap[col]=[];
+    colorMap[col].push(c);
+  });
   for(let col in colorMap) colorMap[col].sort((a,b)=>(a.number||0)-(b.number||0));
-  let shuffledColors=Object.keys(colorMap).sort(()=>Math.random()-0.5);
-  currentCards=[]; shuffledColors.forEach(col=>currentCards.push(...colorMap[col])); currentCards.push(...noColorCards);
+  const shuffledColors=Object.keys(colorMap).sort(()=>Math.random()-0.5);
+  currentCards=[]; shuffledColors.forEach(col=>currentCards.push(...colorMap[col]));
 
   currentIndex=0; errors=[];
   document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
@@ -243,10 +312,11 @@ function showCard(){
 
   document.getElementById("card-question").textContent=card.question;
   document.getElementById("card-answer").textContent=card.answer;
+
   if(card.image){ frontImg.src=card.image; frontImg.style.display="block"; backImg.src=card.image; backImg.style.display="block"; }
   else{ frontImg.style.display="none"; backImg.style.display="none"; }
 
-  // --- Affichage couleur + chiffre ---
+  // Afficher chiffre + couleur
   let labelDiv=frontFace.querySelector(".card-label");
   if(!labelDiv){
     labelDiv=document.createElement("div"); labelDiv.className="card-label";
@@ -255,12 +325,15 @@ function showCard(){
     frontFace.appendChild(labelDiv); backFace.appendChild(labelDiv.cloneNode(true));
   }
   if(card.color && card.number){ labelDiv.textContent=card.number; labelDiv.style.background=card.color; labelDiv.style.color="#fff"; }
-  else if(card.color){ labelDiv.textContent=''; labelDiv.style.background=card.color; labelDiv.style.color="#fff"; }
   else{ labelDiv.textContent=''; labelDiv.style.background="transparent"; }
 
-  function adjustFontSize(face){ let fontSize=36; const minFontSize=12; face.style.fontSize=fontSize+"px";
-    while(face.scrollHeight>face.clientHeight && fontSize>minFontSize){ fontSize--; face.style.fontSize=fontSize+"px"; } }
+  function adjustFontSize(face){
+    let fontSize=36; const minFontSize=12;
+    face.style.fontSize=fontSize+"px";
+    while(face.scrollHeight>face.clientHeight && fontSize>minFontSize){ fontSize--; face.style.fontSize=fontSize+"px"; }
+  }
   adjustFontSize(frontFace); adjustFontSize(backFace);
+
   document.querySelector(".card").classList.remove("flipped");
 }
 
@@ -270,22 +343,29 @@ function endGame(){ document.querySelectorAll(".container > div").forEach(d=>d.c
 function restartAll(){ currentCards=[...currentSet.cards]; currentIndex=0; errors=[]; document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden")); document.getElementById("game-screen").classList.remove("hidden"); showCard(); }
 function restartErrors(){ if(errors.length===0){ alert("Aucune erreur à rejouer !"); return; } currentCards=[...errors]; currentIndex=0; errors=[]; document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden")); document.getElementById("game-screen").classList.remove("hidden"); showCard(); }
 
-function importSet(e){ const file=e.target.files[0]; if(!file) return; const reader=new FileReader();
-reader.onload=function(ev){ try{ const importedSet=JSON.parse(ev.target.result); sets.push(importedSet); saveSets(); displaySets(); alert("Set importé avec succès !"); }catch(err){ alert("Erreur : fichier invalide !"); } };
-reader.readAsText(file);
-}
+function importSet(event){ const file=event.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=function(e){ try{ const importedSet=JSON.parse(e.target.result); sets.push(importedSet); saveSets(); displaySets(); alert("Set importé avec succès !"); }catch(err){ alert("Erreur : fichier invalide !"); } }; reader.readAsText(file); }
 
-// --- Navigation clavier ---
+// Navigation clavier
 document.addEventListener("keydown", function(e){
-  if(e.key==="Enter"){
-    const active=document.activeElement;
-    if(active && active.tagName==="INPUT" && active.closest(".card-editor")){
-      const cardDiv=active.closest(".card-editor");
-      const cardsEditor=document.getElementById("cards-editor");
-      const inputs=Array.from(cardDiv.querySelectorAll("input[type=text]"));
-      const lastCard=cardsEditor.lastElementChild===cardDiv;
-      const index=inputs.indexOf(active);
-      if(index!==-1){ e.preventDefault(); if(index===0) inputs[1].focus(); else if(index===1) inputs[2].focus(); else if(index===2){ if(lastCard){ addCardEditor(); cardsEditor.lastElementChild.children[0].focus(); } else { const nextCard=cardDiv.nextElementSibling; if(nextCard) nextCard.querySelector("input").focus(); } } }
+  const active=document.activeElement;
+  if(e.key==="Enter" && active && active.tagName==="INPUT" && active.closest(".card-editor")){    const cardDiv=active.closest(".card-editor");
+    const cardsEditor=document.getElementById("cards-editor");
+    const inputs=Array.from(cardDiv.querySelectorAll("input[type=text]"));
+    const lastCard=cardsEditor.lastElementChild===cardDiv;
+    const index=inputs.indexOf(active);
+    if(index!==-1){
+      e.preventDefault();
+      if(index===0) inputs[1].focus();
+      else if(index===1) inputs[2].focus();
+      else if(index===2){
+        if(lastCard){
+          addCardEditor();
+          cardsEditor.lastElementChild.children[0].focus();
+        } else {
+          const nextCard=cardDiv.nextElementSibling;
+          if(nextCard) nextCard.querySelector("input").focus();
+        }
+      }
     }
   }
 });
