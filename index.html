@@ -213,7 +213,7 @@ h1, h2 {
 <!-- Écran fonctionnalités -->
 <div id="info-screen" class="hidden">
   <h2>Fonctionnalités +++</h2>
-  <pre style="line-height:1.5;">
+  <div style="white-space: pre-wrap; line-height:1.5; width: 100%; max-width: 700px; margin: 0 auto; padding: 10px; font-size:16px;">
 Pendant que tu pratiques
 • Si tu joues avec un clavier :
   • Espace → Retourne la carte pour voir la réponse.
@@ -227,7 +227,7 @@ Pendant que tu modifies
 • Les couleurs peuvent être choisies de deux façons :
   1. Nom de la couleur en anglais (la première lettre doit être en majuscule, par exemple Red, Blue).
   2. Code hexadécimal de la couleur (par exemple #FF0000 pour rouge, #0000FF pour bleu).
-  </pre>
+  </div>
   <button onclick="goHome()">🏠 Retour</button>
 </div>
 
@@ -554,11 +554,10 @@ document.addEventListener("keydown", function(e){
   }
 });
 
-// Écran fonctionnalités
-const infoBtn = document.getElementById('infoBtn');
-infoBtn.addEventListener('click', () => {
-    document.querySelectorAll(".container > div").forEach(d => d.classList.add("hidden"));
-    document.getElementById("info-screen").classList.remove("hidden");
+// Bouton * pour fonctionnalités
+document.getElementById('infoBtn').addEventListener('click', ()=>{
+  document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
+  document.getElementById("info-screen").classList.remove("hidden");
 });
 
 goHome();
