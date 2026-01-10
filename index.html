@@ -177,6 +177,7 @@ h1, h2 {
   margin-bottom: 5px;
 }
 
+/* Bouton Galerie */
 .btn-photo {
   font-size: 16px;
   padding: 5px 10px;
@@ -193,7 +194,7 @@ h1, h2 {
   background: #875fb3;
 }
 
-/* Bouton couleur de même taille que btn-photo */
+/* Bouton Couleur corrigé : même taille que Galerie */
 .btn-color {
   font-size: 16px;
   padding: 5px 10px;
@@ -326,8 +327,6 @@ function showSetEditor(setIndex=null){
 }
 
 function addCardEditor(q='',a='',img='',color="#ddd",number=""){
-  if(q === "" && a === "") return; // empêche l'ajout de la carte vide/RIEN
-
   const div=document.createElement("div");
   div.className="card-editor";
   div.innerHTML=`
@@ -513,83 +512,32 @@ function endGame(){
   document.getElementById("final-score").textContent=`Score: ${currentCards.length-errors.length}/${currentCards.length}`;
 }
 
-function restartAll(){
-  currentCards=[...currentSet.cards];
-  currentIndex=0;
-  errors=[];
-  document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
-  document.getElementById("game-screen").classList.remove("hidden");
-  showCard();
-}
+function restartAll(){ startGame(sets.indexOf(currentSet)); }
+function restartErrors(){ currentCards = errors.slice(); currentIndex=0; errors=[]; showCard(); }
 
-function restartErrors(){
-  if(errors.length===0){ alert("Aucune erreur à rejouer !"); return; }
-  currentCards=[...errors];
-  currentIndex=0;
-  errors=[];
-  document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
-  document.getElementById("game-screen").classList.remove("hidden");
-  showCard();
-}
-
+// ----- IMPORT / EXPORT -----
 function importSet(event){
   const file = event.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = function(e){
+  reader.onload = (e)=>{
     try{
-      const importedSet = JSON.parse(e.target.result);
-      sets.push(importedSet);
-      saveSets();
-      displaySets();
-      alert("Set importé avec succès !");
-    } catch(err){
-      alert("Erreur : fichier invalide !");
-    }
+      const obj = JSON.parse(e.target.result);
+      if(obj.title && obj.cards) sets.push(obj);
+      saveSets(); displaySets(); alert("✅ Set importé avec succès !");
+    }catch(err){ alert("❌ Fichier invalide"); console.log(err); }
   };
   reader.readAsText(file);
 }
 
-// Éditeur: navigation clavier Enter
-document.addEventListener("keydown", function(e){
-  if(e.key==="Enter"){
-    const active = document.activeElement;
-    if(active && active.tagName==="INPUT" && active.closest(".card-editor")){
-      const cardDiv = active.closest(".card-editor");
-      const cardsEditor = document.getElementById("cards-editor");
-      const inputs = Array.from(cardDiv.querySelectorAll("input[type=text]"));
-      const lastCard = cardsEditor.lastElementChild===cardDiv;
-      const index = inputs.indexOf(active);
-      if(index!==-1){
-        e.preventDefault();
-        if(index===0) inputs[1].focus();
-        else if(index===1) inputs[2].focus();
-        else if(index===2){
-          if(lastCard){ addCardEditor(); cardsEditor.lastElementChild.children[0].focus(); }
-          else { const next = cardDiv.nextElementSibling; if(next) next.querySelector("input").focus(); }
-        }
-      }
-    }
-  }
-});
-
-// Jeu: raccourcis clavier
-document.addEventListener("keydown", function(e){
-  const gs=document.getElementById("game-screen");
-  if(!gs.classList.contains("hidden")){
-    if(e.code==="Space"){ e.preventDefault(); flipCard(); }
-    if(e.key.toLowerCase()==="f"){ markAnswer(false); }
-    if(e.key.toLowerCase()==="j"){ markAnswer(true); }
-  }
-});
-
-// Bouton * pour fonctionnalités
-document.getElementById('infoBtn').addEventListener('click', ()=>{
-  document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
-  document.getElementById("info-screen").classList.remove("hidden");
-});
-
-goHome();
+function exportAllSets(){
+  const blob = new Blob([JSON.stringify(sets,null,2)],{type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download="all_sets.json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 </script>
 </body>
 </html>
