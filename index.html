@@ -177,9 +177,10 @@ h1, h2 {
   margin-bottom: 5px;
 }
 
+/* SEULE MODIFICATION : taille du bouton Couleur */
 .btn-color {
-  font-size: 16px;
-  padding: 5px 10px;
+  font-size: 14px;
+  padding: 4px 8px;
   margin: 0 2px;
 }
 
@@ -197,7 +198,6 @@ h1, h2 {
 <body>
 <div class="container">
 
-<!-- Écran accueil -->
 <div id="home-screen">
 <h1 style="display:flex; align-items:center; justify-content:space-between;">
   Mes Sets
@@ -210,7 +210,6 @@ h1, h2 {
 <div id="sets-list"></div>
 </div>
 
-<!-- Écran fonctionnalités -->
 <div id="info-screen" class="hidden">
   <h2>Fonctionnalités +++</h2>
   <div style="white-space: pre-wrap; line-height:1.5; width: 100%; max-width: 700px; margin: 0 auto; padding: 10px; font-size:16px;">
@@ -223,15 +222,14 @@ Pendant que tu pratiques
 Pendant que tu modifies
 • Enter → Passe à la ligne suivante et crée automatiquement une nouvelle carte.
 • Les couleurs servent à créer des mini-paquets :
-  • Lors du jeu, les cartes d’un mini-paquet ne sont pas mélangées avec les autres cartes, ce qui permet de pratiquer un thème spécifique sans mélange.
-• Les couleurs peuvent être choisies de deux façons :
-  1. Nom de la couleur en anglais (la première lettre doit être en majuscule, par exemple Red, Blue).
-  2. Code hexadécimal de la couleur (par exemple #FF0000 pour rouge, #0000FF pour bleu).
+  • Lors du jeu, les cartes d’un mini-paquet ne sont pas mélangées avec les autres cartes.
+• Les couleurs peuvent être choisies :
+  1. Nom en anglais (Red, Blue…)
+  2. Code hexadécimal (#FF0000, #0000FF…)
   </div>
   <button onclick="goHome()">🏠 Retour</button>
 </div>
 
-<!-- Écran édition -->
 <div id="editor-screen" class="hidden">
 <h2>Créer / Modifier un Set</h2>
 <input type="text" id="set-title" placeholder="Titre du set"><br><br>
@@ -245,7 +243,6 @@ Pendant que tu modifies
 <button onclick="goHome()">🏠 Accueil</button>
 </div>
 
-<!-- Écran jeu -->
 <div id="game-screen" class="hidden">
 <h2 id="game-title"></h2>
 <div id="game-cards" class="card-container"></div>
@@ -255,7 +252,6 @@ Pendant que tu modifies
 </div>
 </div>
 
-<!-- Écran score -->
 <div id="score-screen" class="hidden">
 <h2>Résultat</h2>
 <p id="final-score"></p>
@@ -381,13 +377,27 @@ function displaySets(){
       const jsonStr = JSON.stringify(sets[i],null,2);
       const blob = new Blob([jsonStr], {type:"application/json"});
       const file = new File([blob], `${sets[i].title.replace(/[^a-z0-9]/gi,"_")||"set"}.json`, {type:"application/json"});
-      if(navigator.canShare && navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], title:sets[i].title, text:"Voici mon set de flashcards !"}); alert("✅ Set partagé ou enregistré avec succès !"); return; } catch(err){ console.log(err); } }
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({files:[file], title:sets[i].title, text:"Voici mon set de flashcards !"});
+          alert("✅ Set partagé ou enregistré avec succès !");
+          return;
+        } catch(err){ console.log(err); }
+      }
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href=url; a.download = `${sets[i].title.replace(/[^a-z0-9]/gi,"_")||"set"}.json`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); alert("✅ Fichier téléchargé avec succès !");
+      const a = document.createElement("a");
+      a.href=url;
+      a.download = `${sets[i].title.replace(/[^a-z0-9]/gi,"_")||"set"}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      alert("✅ Fichier téléchargé avec succès !");
     };
 
-    buttonsDiv.appendChild(editBtn); buttonsDiv.appendChild(delBtn); buttonsDiv.appendChild(shareBtn);
+    buttonsDiv.appendChild(editBtn);
+    buttonsDiv.appendChild(delBtn);
+    buttonsDiv.appendChild(shareBtn);
     div.appendChild(buttonsDiv);
     list.appendChild(div);
   });
@@ -401,12 +411,9 @@ function deleteSet(i){
   }
 }
 
-// ----- LOGIQUE BLOCS POUR LE JEU -----
 function startGame(i){
   currentSet = sets[i];
   const blocks = [];
-
-  // 1. Cartes colorées par couleur
   const colorGroups = {};
   currentSet.cards.forEach(c=>{
     if(c.color){
@@ -419,8 +426,6 @@ function startGame(i){
     group.sort((a,b)=>parseInt(a.number||0)-parseInt(b.number||0));
     blocks.push(group);
   }
-
-  // 2. Cartes sans couleur
   const noColorCards = currentSet.cards.filter(c=>!c.color);
   if(noColorCards.length>0){
     for(let j=noColorCards.length-1; j>0; j--){
@@ -429,18 +434,13 @@ function startGame(i){
     }
     blocks.push(noColorCards);
   }
-
-  // 3. Mélanger les blocs
   for(let j=blocks.length-1;j>0;j--){
     const k=Math.floor(Math.random()*(j+1));
     [blocks[j],blocks[k]]=[blocks[k],blocks[j]];
   }
-
-  // 4. Concaténer tous les blocs pour currentCards
   currentCards=[];
   blocks.forEach(block=>currentCards.push(...block));
 
-  // Initialisation jeu
   currentIndex=0;
   errors=[];
   document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
@@ -521,7 +521,6 @@ function importSet(event){
   reader.readAsText(file);
 }
 
-// Éditeur: navigation clavier Enter
 document.addEventListener("keydown", function(e){
   if(e.key==="Enter"){
     const active = document.activeElement;
@@ -544,7 +543,6 @@ document.addEventListener("keydown", function(e){
   }
 });
 
-// Jeu: raccourcis clavier
 document.addEventListener("keydown", function(e){
   const gs=document.getElementById("game-screen");
   if(!gs.classList.contains("hidden")){
@@ -554,7 +552,6 @@ document.addEventListener("keydown", function(e){
   }
 });
 
-// Bouton * pour fonctionnalités
 document.getElementById('infoBtn').addEventListener('click', ()=>{
   document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
   document.getElementById("info-screen").classList.remove("hidden");
