@@ -199,7 +199,32 @@ h1, h2 {
 
 <!-- Écran accueil -->
 <div id="home-screen">
-<h1>Mes Sets</h1>
+
+<!-- Titre avec bouton * -->
+<h1 style="display:flex; align-items:center; justify-content:space-between;">
+  Mes Sets
+  <button id="infoBtn" style="font-size:24px; cursor:pointer; border:none; background:none;">*</button>
+</h1>
+
+<!-- Bloc fonctionnalités caché -->
+<div id="infoBox" style="display:none; background-color:#f0f0f0; padding:15px; border-radius:8px; line-height:1.5; white-space:pre-line; margin-top:10px;">
+Fonctionnalités +++
+
+Pendant que tu pratiques
+• Si tu joues avec un clavier :
+  • Espace → Retourne la carte pour voir la réponse.
+  • F → Indique que tu as mal répondu à la carte.
+  • J → Indique que tu as bien répondu à la carte.
+
+Pendant que tu modifies
+• Enter → Passe à la ligne suivante et crée automatiquement une nouvelle carte.
+• Les couleurs servent à créer des mini-paquets :
+  • Lors du jeu, les cartes d’un mini-paquet ne sont pas mélangées avec les autres cartes, ce qui permet de pratiquer un thème spécifique sans mélange.
+• Les couleurs peuvent être choisies de deux façons :
+  1. Nom de la couleur en anglais (la première lettre doit être en majuscule, par exemple Red, Blue).
+  2. Code hexadécimal de la couleur (par exemple #FF0000 pour rouge, #0000FF pour bleu).
+</div>
+
 <button onclick="showSetEditor()">➕ Nouveau set</button>
 <button onclick="document.getElementById('import-file').click()">📥 Importer un set</button>
 <button onclick="exportAllSets()">💾 Exporter tous les sets</button>
@@ -528,6 +553,14 @@ document.addEventListener("keydown", function(e){
     if(e.key.toLowerCase()==="f"){ markAnswer(false); }
     if(e.key.toLowerCase()==="j"){ markAnswer(true); }
   }
+});
+
+// --- Script pour le bouton * ---
+const infoBtn = document.getElementById('infoBtn');
+const infoBox = document.getElementById('infoBox');
+
+infoBtn.addEventListener('click', () => {
+    infoBox.style.display = (infoBox.style.display === 'none' || infoBox.style.display === '') ? 'block' : 'none';
 });
 
 goHome();
