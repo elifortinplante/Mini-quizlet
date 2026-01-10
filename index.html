@@ -199,17 +199,21 @@ h1, h2 {
 
 <!-- Écran accueil -->
 <div id="home-screen">
-
-<!-- Titre avec bouton * -->
 <h1 style="display:flex; align-items:center; justify-content:space-between;">
   Mes Sets
   <button id="infoBtn" style="font-size:24px; cursor:pointer; border:none; background:none;">*</button>
 </h1>
+<button onclick="showSetEditor()">➕ Nouveau set</button>
+<button onclick="document.getElementById('import-file').click()">📥 Importer un set</button>
+<button onclick="exportAllSets()">💾 Exporter tous les sets</button>
+<input type="file" id="import-file" class="hidden" onchange="importSet(event)">
+<div id="sets-list"></div>
+</div>
 
-<!-- Bloc fonctionnalités caché -->
-<div id="infoBox" style="display:none; background-color:#f0f0f0; padding:15px; border-radius:8px; line-height:1.5; white-space:pre-line; margin-top:10px;">
-Fonctionnalités +++
-
+<!-- Écran fonctionnalités -->
+<div id="info-screen" class="hidden">
+  <h2>Fonctionnalités +++</h2>
+  <pre style="line-height:1.5;">
 Pendant que tu pratiques
 • Si tu joues avec un clavier :
   • Espace → Retourne la carte pour voir la réponse.
@@ -223,13 +227,8 @@ Pendant que tu modifies
 • Les couleurs peuvent être choisies de deux façons :
   1. Nom de la couleur en anglais (la première lettre doit être en majuscule, par exemple Red, Blue).
   2. Code hexadécimal de la couleur (par exemple #FF0000 pour rouge, #0000FF pour bleu).
-</div>
-
-<button onclick="showSetEditor()">➕ Nouveau set</button>
-<button onclick="document.getElementById('import-file').click()">📥 Importer un set</button>
-<button onclick="exportAllSets()">💾 Exporter tous les sets</button>
-<input type="file" id="import-file" class="hidden" onchange="importSet(event)">
-<div id="sets-list"></div>
+  </pre>
+  <button onclick="goHome()">🏠 Retour</button>
 </div>
 
 <!-- Écran édition -->
@@ -555,12 +554,11 @@ document.addEventListener("keydown", function(e){
   }
 });
 
-// --- Script pour le bouton * ---
+// Écran fonctionnalités
 const infoBtn = document.getElementById('infoBtn');
-const infoBox = document.getElementById('infoBox');
-
 infoBtn.addEventListener('click', () => {
-    infoBox.style.display = (infoBox.style.display === 'none' || infoBox.style.display === '') ? 'block' : 'none';
+    document.querySelectorAll(".container > div").forEach(d => d.classList.add("hidden"));
+    document.getElementById("info-screen").classList.remove("hidden");
 });
 
 goHome();
