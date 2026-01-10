@@ -177,9 +177,26 @@ h1, h2 {
   margin-bottom: 5px;
 }
 
+.btn-photo {
+  font-size: 16px;
+  padding: 5px 10px;
+  margin: 0 2px;
+  cursor: pointer;
+  border-radius: 12px;
+  border: none;
+  background: #a18cd1;
+  color: white;
+  transition: 0.3s;
+}
+
+.btn-photo:hover {
+  background: #875fb3;
+}
+
+/* Bouton couleur de même taille que btn-photo */
 .btn-color {
   font-size: 16px;
-  padding: 12px 20px; /* même taille que le bouton Galerie */
+  padding: 5px 10px;
   margin: 0 2px;
   cursor: pointer;
   border-radius: 12px;
@@ -309,6 +326,8 @@ function showSetEditor(setIndex=null){
 }
 
 function addCardEditor(q='',a='',img='',color="#ddd",number=""){
+  if(q === "" && a === "") return; // empêche l'ajout de la carte vide/RIEN
+
   const div=document.createElement("div");
   div.className="card-editor";
   div.innerHTML=`
@@ -416,6 +435,7 @@ function startGame(i){
   currentSet = sets[i];
   const blocks = [];
 
+  // 1. Cartes colorées par couleur
   const colorGroups = {};
   currentSet.cards.forEach(c=>{
     if(c.color){
@@ -429,6 +449,7 @@ function startGame(i){
     blocks.push(group);
   }
 
+  // 2. Cartes sans couleur
   const noColorCards = currentSet.cards.filter(c=>!c.color);
   if(noColorCards.length>0){
     for(let j=noColorCards.length-1; j>0; j--){
@@ -438,14 +459,17 @@ function startGame(i){
     blocks.push(noColorCards);
   }
 
+  // 3. Mélanger les blocs
   for(let j=blocks.length-1;j>0;j--){
     const k=Math.floor(Math.random()*(j+1));
     [blocks[j],blocks[k]]=[blocks[k],blocks[j]];
   }
 
+  // 4. Concaténer tous les blocs pour currentCards
   currentCards=[];
   blocks.forEach(block=>currentCards.push(...block));
 
+  // Initialisation jeu
   currentIndex=0;
   errors=[];
   document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
@@ -526,6 +550,7 @@ function importSet(event){
   reader.readAsText(file);
 }
 
+// Éditeur: navigation clavier Enter
 document.addEventListener("keydown", function(e){
   if(e.key==="Enter"){
     const active = document.activeElement;
@@ -548,6 +573,7 @@ document.addEventListener("keydown", function(e){
   }
 });
 
+// Jeu: raccourcis clavier
 document.addEventListener("keydown", function(e){
   const gs=document.getElementById("game-screen");
   if(!gs.classList.contains("hidden")){
@@ -557,6 +583,7 @@ document.addEventListener("keydown", function(e){
   }
 });
 
+// Bouton * pour fonctionnalités
 document.getElementById('infoBtn').addEventListener('click', ()=>{
   document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
   document.getElementById("info-screen").classList.remove("hidden");
