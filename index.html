@@ -177,10 +177,10 @@ h1, h2 {
   margin-bottom: 5px;
 }
 
-/* SEULE MODIFICATION : bouton Couleur identique à Galerie */
+/* MODIFICATION : bouton Couleur identique au bouton Galerie */
 .btn-color {
-  font-size: 16px;     /* même que btn-photo */
-  padding: 10px;       /* même que btn-photo */
+  font-size: 14px;   /* police identique à Galerie */
+  padding: 6px 10px; /* même largeur/hauteur que Galerie */
   margin: 0 2px;
 }
 
@@ -513,49 +513,29 @@ function importSet(event){
       sets.push(importedSet);
       saveSets();
       displaySets();
-      alert("Set importé avec succès !");
-    } catch(err){
-      alert("Erreur : fichier invalide !");
-    }
+      alert("✅ Set importé avec succès !");
+    }catch(err){ alert("❌ Erreur lors de l'import !"); }
   };
   reader.readAsText(file);
+  event.target.value="";
 }
 
-document.addEventListener("keydown", function(e){
-  if(e.key==="Enter"){
-    const active = document.activeElement;
-    if(active && active.tagName==="INPUT" && active.closest(".card-editor")){
-      const cardDiv = active.closest(".card-editor");
-      const cardsEditor = document.getElementById("cards-editor");
-      const inputs = Array.from(cardDiv.querySelectorAll("input[type=text]"));
-      const lastCard = cardsEditor.lastElementChild===cardDiv;
-      const index = inputs.indexOf(active);
-      if(index!==-1){
-        e.preventDefault();
-        if(index===0) inputs[1].focus();
-        else if(index===1) inputs[2].focus();
-        else if(index===2){
-          if(lastCard){ addCardEditor(); cardsEditor.lastElementChild.children[0].focus(); }
-          else { const next = cardDiv.nextElementSibling; if(next) next.querySelector("input").focus(); }
-        }
-      }
-    }
-  }
-});
+function exportAllSets(){
+  const blob = new Blob([JSON.stringify(sets,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download="all_sets.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
-document.addEventListener("keydown", function(e){
-  const gs=document.getElementById("game-screen");
-  if(!gs.classList.contains("hidden")){
-    if(e.code==="Space"){ e.preventDefault(); flipCard(); }
-    if(e.key.toLowerCase()==="f"){ markAnswer(false); }
-    if(e.key.toLowerCase()==="j"){ markAnswer(true); }
-  }
-});
-
-document.getElementById('infoBtn').addEventListener('click', ()=>{
+document.getElementById("infoBtn").onclick = ()=>{
   document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
   document.getElementById("info-screen").classList.remove("hidden");
-});
+};
 
 goHome();
 </script>
