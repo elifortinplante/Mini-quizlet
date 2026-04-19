@@ -293,7 +293,7 @@ function showSetEditor(setIndex=null){
   }
 }
 
-function addCardEditor(q='',a='',img='',color="#ddd",number=""){
+function addCardEditor(q='',a='',img='',color="",number=""){
   const div=document.createElement("div");
   div.className="card-editor";
   div.innerHTML=`
@@ -303,11 +303,44 @@ function addCardEditor(q='',a='',img='',color="#ddd",number=""){
     <input type="file" accept="image/*" class="img-upload" style="display:none">
     <button class="btn-photo">📸 Galerie</button>
     <button class="btn-color">Couleur</button>
-    <span class="color-display" style="background:${color}">${number}</span>
+    <span class="color-display" style="background:${color || '#ddd'}">${number}</span>
     <button class="btn-del-card">🗑️ Supprimer cette carte</button>
     <hr>
   `;
   document.getElementById("cards-editor").appendChild(div);
+// 🎯 Gestion ENTER intelligente
+const inputs = div.querySelectorAll("input");
+
+inputs[0].addEventListener("keydown", (e) => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    inputs[1].focus();
+  }
+});
+
+inputs[1].addEventListener("keydown", (e) => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    inputs[2].focus();
+  }
+});
+
+inputs[2].addEventListener("keydown", (e) => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    addCardEditor();
+
+setTimeout(() => {
+
+  const allCards = document.querySelectorAll("#cards-editor .card-editor");
+
+  const lastCard = allCards[allCards.length - 1];
+
+  lastCard.querySelector("input").focus();
+
+}, 0);
+  }
+});
 
   const imgInput = div.querySelector(".img-upload");
   const urlInput = div.children[2];
@@ -341,7 +374,8 @@ function saveSet(){
     const q = div.children[0].value;
     const a = div.children[1].value;
     const img = div.children[2].value;
-    const color = div.querySelector(".color-display").style.background;
+    const rawColor = div.querySelector(".color-display").style.background;
+const color = (rawColor === "rgb(221, 221, 221)" || rawColor === "#ddd") ? "" : rawColor;
     const number = div.querySelector(".color-display").textContent;
     if(q && a) cards.push({question:q, answer:a, image:img, color:color, number:number});
   });
@@ -535,6 +569,31 @@ document.getElementById("infoBtn").onclick = ()=>{
   document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
   document.getElementById("info-screen").classList.remove("hidden");
 };
+document.addEventListener("keydown", (e) => {
+  const gameScreen = document.getElementById("game-screen");
+
+  // ❌ si pas dans le jeu → ne fait rien
+  if(gameScreen.classList.contains("hidden")) return;
+
+  // ❌ si tu écris dans un champ → ne fait rien
+  if(document.activeElement.tagName === "INPUT") return;
+
+  // 🎯 Espace = retourner carte
+  if(e.code === "Space"){
+    e.preventDefault();
+    flipCard();
+  }
+
+  // 🎯 F = Mauvais
+  if(e.key.toLowerCase() === "f"){
+    markAnswer(false);
+  }
+
+  // 🎯 J = Bon
+  if(e.key.toLowerCase() === "j"){
+    markAnswer(true);
+  }
+});
 
 goHome();
 </script>
