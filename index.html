@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flashcards App</title>
 <style>
+#gems-display,
+#fire-display {
+  font-size: 20px;
+  font-weight: bold;
+}
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -198,10 +203,17 @@ h1, h2 {
 <div class="container">
 
 <div id="home-screen">
-<h1 style="display:flex; align-items:center; justify-content:space-between;">
+<h1 style="display:flex; align-items:center;">
   Mes Sets
-  <button id="infoBtn" style="font-size:24px; cursor:pointer; border:none; background:none;">*</button>
+  <span id="gems-display" style="margin-left:10px;">💎 0</span>
+<span id="fire-display" style="margin-left:10px;">
+
+  🔥 <span id="fire-days">0</span>
+
+</span>
+  <button id="infoBtn" style="margin-left:auto; font-size:24px; cursor:pointer; border:none; background:none;">*</button>
 </h1>
+
 <button onclick="showSetEditor()">➕ Nouveau set</button>
 <button onclick="document.getElementById('import-file').click()">📥 Importer un set</button>
 <button onclick="exportAllSets()">💾 Exporter tous les sets</button>
@@ -227,6 +239,16 @@ Pendant que tu modifies
   2. Code hexadécimal (#FF0000, #0000FF…)
   </div>
   <button onclick="goHome()">🏠 Retour</button>
+
+  <hr>
+
+  <h2>🧊 Gels</h2>
+
+  <button onclick="buyGel()">Acheter 1 🧊 (1000 💎)</button>
+
+  <button onclick="buy2Gels()">Acheter 2 🧊 (1700 💎)</button>
+
+  <p>Tu as : <span id="gel-count">0</span> 🧊 (max 2)</p>
 </div>
 
 <div id="editor-screen" class="hidden">
@@ -445,6 +467,9 @@ function deleteSet(i){
 }
 
 function startGame(i){
+streak = 0;
+sessionGems = 0;
+updateGemsUI();
   currentSet = sets[i];
   const blocks = [];
   const colorGroups = {};
@@ -505,6 +530,23 @@ function showCard(){
 function flipCard(){ document.querySelector(".card").classList.toggle("flipped"); }
 
 function markAnswer(correct){
+if(correct){
+  streak++;
+  gems++;
+  sessionGems++;
+
+  if(streak === 10){
+    gems -= 10;
+    sessionGems -= 10;
+    gems += 25;
+    sessionGems += 25;
+  }
+} else {
+  streak = 0;
+}
+
+localStorage.setItem("gems", gems);
+updateGemsUI();
   if(!correct) errors.push(currentCards[currentIndex]);
   currentIndex++;
   if(currentIndex<currentCards.length) showCard();
@@ -512,9 +554,14 @@ function markAnswer(correct){
 }
 
 function endGame(){
+checkFireStreak();
   document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
   document.getElementById("score-screen").classList.remove("hidden");
   document.getElementById("final-score").textContent=`Score: ${currentCards.length-errors.length}/${currentCards.length}`;
+document.getElementById("final-score").insertAdjacentHTML(
+  "afterend",
+  `<p>💎 +${sessionGems} gemmes gagnées</p>`
+);
 }
 
 function restartAll(){
@@ -594,8 +641,95 @@ document.addEventListener("keydown", (e) => {
     markAnswer(true);
   }
 });
+let gems = parseInt(localStorage.getItem("gems")) || 0;
+let fireDays = parseInt(localStorage.getItem("fireDays")) || 0;
+let lastLesson = localStorage.getItem("lastLesson") || "";
+let gels = parseInt(localStorage.getItem("gels")) || 0;
+let streak = 0;
+let sessionGems = 0;
+function updateGemsUI(){
+  document.getElementById("gems-display").textContent = "💎 " + gems;
+}
+function updateFireUI(){
+  document.getElementById("fire-days").textContent = fireDays;
+}
+function updateGelUI(){
+  document.getElementById("gel-count").textContent = gels;
+}
+
+function buyGel(){
+
+  if(gels >= 2) return alert("Max 2 🧊");
+
+  if(gems < 1000) return alert("Pas assez de 💎");
+
+  gems -= 1000;
+
+  gels++;
+
+  localStorage.setItem("gems", gems);
+
+  localStorage.setItem("gels", gels);
+
+  updateGemsUI();
+
+  updateGelUI();
+
+}
+
+function buy2Gels(){
+
+  if(gels >= 1) return alert("Max 2 🧊");
+
+  if(gems < 1700) return alert("Pas assez de 💎");
+
+  gems -= 1700;
+
+  gels += 2;
+
+  if(gels > 2) gels = 2;
+
+  localStorage.setItem("gems", gems);
+
+  localStorage.setItem("gels", gels);
+
+  updateGemsUI();
+
+  updateGelUI();
+
+}
+
+function updateGelUI(){
+  document.getElementById("gel-count").textContent = gels;
+}
+function checkFireStreak(){
+  if(!lastLesson) return;
+
+  const today = new Date();
+  const last = new Date(lastLesson);
+
+  const diffDays = Math.floor((today - last) / (1000 * 60 * 60 * 24));
+
+  if(diffDays > 1){
+
+    if(gels > 0){
+      gels--;
+      localStorage.setItem("gels", gels);
+      updateGelUI();
+
+      alert("🧊 Gel utilisé pour sauver ta streak !");
+      return;
+    }
+
+    fireDays = 0;
+    localStorage.setItem("fireDays", fireDays);
+    updateFireUI();
+  }
+}
 
 goHome();
+updateGemsUI();
+updateFireUI();
 </script>
 </body>
 </html>
