@@ -249,6 +249,12 @@ Pendant que tu modifies
   <button onclick="buy2Gels()">Acheter 2 🧊 (1700 💎)</button>
 
   <p>Tu as : <span id="gel-count">0</span> 🧊 (max 2)</p>
+<hr>
+
+<h2>Code spécial créateur</h2>
+
+<input id="secretCode" placeholder="Tape ton code ici">
+<button onclick="checkCode()">Valider</button>
 </div>
 
 <div id="editor-screen" class="hidden">
@@ -289,6 +295,8 @@ let currentSet = null;
 let currentCards = [];
 let currentIndex = 0;
 let errors = [];
+let voyageMode = JSON.parse(localStorage.getItem("voyageMode")) || false;
+let voyageProtectUntil = parseInt(localStorage.getItem("voyageProtectUntil")) || 0;
 
 function saveSets(){ localStorage.setItem("sets",JSON.stringify(sets)); }
 function goHome(){ document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden")); document.getElementById("home-screen").classList.remove("hidden"); displaySets(); }
@@ -554,14 +562,35 @@ updateGemsUI();
 }
 
 function endGame(){
-checkFireStreak();
+
+  checkFireStreak();
+
+  const today = new Date().toDateString();
+  const last = new Date(lastLesson).toDateString();
+
+  // 🔥 si nouveau jour → +1 streak
+  if(last !== today){
+    fireDays++;
+  }
+
+  // 💾 on enregistre le nouveau jour
+  lastLesson = new Date().toISOString();
+  localStorage.setItem("fireDays", fireDays);
+  localStorage.setItem("lastLesson", lastLesson);
+
+  updateFireUI();
+
+  // écran résultat
   document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
   document.getElementById("score-screen").classList.remove("hidden");
-  document.getElementById("final-score").textContent=`Score: ${currentCards.length-errors.length}/${currentCards.length}`;
-document.getElementById("final-score").insertAdjacentHTML(
-  "afterend",
-  `<p>💎 +${sessionGems} gemmes gagnées</p>`
-);
+
+  document.getElementById("final-score").textContent =
+    `Score: ${currentCards.length-errors.length}/${currentCards.length}`;
+
+  document.getElementById("final-score").insertAdjacentHTML(
+    "afterend",
+    `<p>💎 +${sessionGems} gemmes gagnées</p>`
+  );
 }
 
 function restartAll(){
@@ -699,9 +728,6 @@ function buy2Gels(){
 
 }
 
-function updateGelUI(){
-  document.getElementById("gel-count").textContent = gels;
-}
 function checkFireStreak(){
   if(!lastLesson) return;
 
@@ -709,6 +735,13 @@ function checkFireStreak(){
   const last = new Date(lastLesson);
 
   const diffDays = Math.floor((today - last) / (1000 * 60 * 60 * 24));
+const now = Date.now();
+
+if(now < voyageProtectUntil){
+
+  return; // 🔥 protection active → rien ne se casse
+
+}
 
   if(diffDays > 1){
 
@@ -726,10 +759,49 @@ function checkFireStreak(){
     updateFireUI();
   }
 }
+function updateTheme(){
+  if(voyageMode){
+    document.body.style.background =
+      "url('https://i.postimg.cc/g2bdTP12/IMG-0873.jpg') center/cover no-repeat fixed";
+  } else {
+    document.body.style.background =
+      "linear-gradient(135deg, #a18cd1, #fbc2eb, #8fd3f4)";
+  }
+}
+function checkCode(){
+  const code = document.getElementById("secretCode").value;
+
+if(code === "&voyage&"){
+  voyageMode = !voyageMode;
+
+  if(voyageMode){
+
+    const now = Date.now();
+    voyageProtectUntil = now + (100 * 24 * 60 * 60 * 1000); // 100 jours
+    localStorage.setItem("voyageProtectUntil", voyageProtectUntil);
+
+  } else {
+
+    // 🔥 enlève la protection quand tu désactives
+    voyageProtectUntil = 0;
+    localStorage.setItem("voyageProtectUntil", 0);
+
+  }
+
+  localStorage.setItem("voyageMode", voyageMode);
+
+  alert(voyageMode ? "🌴 Mode voyage ACTIVÉ" : "❌ Mode voyage DÉSACTIVÉ");
+  return;
+}
+
+  alert("❌ Mauvais code");
+}
 
 goHome();
 updateGemsUI();
 updateFireUI();
+updateGelUI();
+updateTheme();
 </script>
 </body>
 </html>
