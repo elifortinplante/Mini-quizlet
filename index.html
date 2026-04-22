@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8">p
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flashcards App</title>
 <style>
@@ -743,21 +743,32 @@ if(now < voyageProtectUntil){
 
 }
 
-  if(diffDays > 1){
+ if(diffDays > 1){
 
-    if(gels > 0){
-      gels--;
-      localStorage.setItem("gels", gels);
-      updateGelUI();
+  let daysMissed = diffDays - 1;
 
-      alert("🧊 Gel utilisé pour sauver ta streak !");
-      return;
-    }
-
+  // 🔥 si trop de jours → reset direct
+  if(daysMissed >= 3){
     fireDays = 0;
     localStorage.setItem("fireDays", fireDays);
     updateFireUI();
+    return;
   }
+
+  if(gels >= daysMissed){
+    gels -= daysMissed;
+
+    localStorage.setItem("gels", gels);
+    updateGelUI();
+
+    alert("🧊 " + daysMissed + " gel(s) utilisé(s) pour sauver ta streak !");
+    return;
+  }
+
+  fireDays = 0;
+  localStorage.setItem("fireDays", fireDays);
+  updateFireUI();
+ }
 }
 function updateTheme(){
   if(voyageMode){
